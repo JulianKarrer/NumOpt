@@ -1,0 +1,376 @@
+\RequirePackage{fix-cm}
+\documentclass[oneside, a4paper]{book}
+\usepackage[a4paper,width=150mm,top=25mm,bottom=25mm,bindingoffset=6mm]{geometry}
+
+% Required for inserting images
+\usepackage{eso-pic,graphicx}
+% misc
+\usepackage{caption}
+\DeclareCaptionType{equ}[][]
+%\captionsetup[equ]{labelformat=empty}
+\usepackage{subcaption}
+\usepackage{multicol}
+\usepackage{float}
+\usepackage{adjustbox} % oversized table
+
+% appendix
+\usepackage[toc]{appendix}
+
+% Default font to sans serif
+\renewcommand{\familydefault}{\sfdefault}
+\RequirePackage[T1]{fontenc} 
+\RequirePackage[tt=false, type1=true]{libertine} 
+\RequirePackage[varqu]{zi4} 
+% \RequirePackage[libertine]{newtxmath}
+
+% chapters and headers
+\usepackage[Conny]{fncychap}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0.1pt}
+\renewcommand{\chaptermark}[1]{\markboth{\MakeUppercase{\textsf{{#1}}}}{}}
+\renewcommand{\sectionmark}[1]{\markright{\MakeUppercase{\textsf{\thesection\ #1}}}{} }
+
+% section styling
+\usepackage{titlesec}
+
+% algorithms
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% theorems and definitions
+\usepackage{amsthm}
+\newtheorem{definition}{Definition}
+
+% better tables
+\usepackage{tabu}
+
+% FAT FONTS
+\usepackage{bm} % bold fonts in math mode
+\newcommand\fat[1]{{\boldmath{\textbf{#1}}}}
+\newcommand\emphasis[1]{{\scshape\bfseries#1}}
+
+% mathematical fonts and graphics
+\usepackage{mathtools}
+\usepackage{xfrac} % sfrac for diagonal slashes in fractions
+\usepackage{amsfonts} % math fonts
+\usepackage{amssymb} % more math symbols (supsetneq etc.)
+\usepackage{dbnsymb}
+\usepackage{dsfont} % math fonts
+\usepackage{bbm} % mathbb fonts
+\usepackage{mathrsfs} % fancy swirly font
+\usepackage{gensymb} % degree sign
+
+% draw graphs
+\usepackage[inline]{asymptote}
+\usepackage{qtree}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+
+% nicer fractions
+\usepackage{xfrac}
+% cancel terms
+\usepackage{cancel}
+
+% units
+\usepackage{siunitx}
+
+% plots
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepgfplotslibrary{external}
+\usepgfplotslibrary{patchplots}
+\usepgfplotslibrary{groupplots}
+\pgfplotsset{compat=1.18} 
+\tikzexternalize[prefix=tikz,optimize=false]
+
+% define the Spectral_r color scheme
+\usepackage[table, dvipsnames]{xcolor}
+\definecolor{Spectral0}{RGB}{158, 1, 66}
+\definecolor{Spectral1}{RGB}{213, 62, 79}
+\definecolor{Spectral2}{RGB}{244, 109, 67}
+\definecolor{Spectral3}{RGB}{253, 174, 97}
+\definecolor{Spectral4}{RGB}{254,224,139}
+\definecolor{Spectral5}{RGB}{255,255,191}
+\definecolor{Spectral6}{RGB}{230,245,152}
+\definecolor{Spectral7}{RGB}{171,221,164}
+\definecolor{Spectral8}{RGB}{102,204,204}
+\definecolor{Spectral9}{RGB}{50,136,189}
+\definecolor{Spectral10}{RGB}{94,79,162}
+\pgfplotsset{
+  colormap={Spectral_r}{
+    rgb255(0cm)=(94,79,162)         % 0.0
+    rgb255(1cm)=(50,136,189)        % 0.1
+    rgb255(2cm)=(102,204,204)       % 0.2
+    rgb255(3cm)=(171,221,164)       % 0.3
+    rgb255(4cm)=(230,245,152)       % 0.4
+    rgb255(5cm)=(255,255,191)       % 0.5
+    rgb255(6cm)=(254,224,139)       % 0.6
+    rgb255(7cm)=(253,174,97)        % 0.7
+    rgb255(8cm)=(244,109,67)        % 0.8
+    rgb255(9cm)=(213,62,79)         % 0.9
+    rgb255(10cm)=(158,1,66)         % 1.0
+    }
+}
+
+
+% get width of given text
+\usepackage{calc}
+
+% define a horizontal spacer
+\newcommand\horizontalspacer[0]{\vspace{5pt}\noindent\textcolor{lightgray}{\rule{\textwidth}{1mm}}
+\vspace{5pt}}
+
+% clickable links
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+\renewcommand{\itemautorefname}{Item}
+% fancy boxes
+\usepackage{fancybox}
+\newcommand{\equationnamed}[2]{%
+  \setlength{\fboxsep}{2pt} % padding inside box
+  \setlength{\fboxrule}{0.01pt}
+  \begin{center}
+    \begin{minipage}{\textwidth}
+      \begin{center}\textsc{#1}\end{center}
+      #2
+    \end{minipage}
+  \end{center}
+}
+\newcommand{\equationnamedbox}[2]{%
+  \setlength{\fboxsep}{5pt} % padding inside box
+  \setlength{\fboxrule}{0.01pt}
+  \begin{center}
+    \fbox{
+      \begin{minipage}{0.4\textwidth}
+        \begin{center}\emphasis{#1}\end{center}
+        #2
+      \end{minipage}
+    }
+  \end{center}
+}
+
+% labels to enum items
+\usepackage{enumitem}
+
+\usepackage{array}
+
+% make empty lines skip
+% \usepackage{parskip}
+
+% include pdfs 
+\usepackage{pdfpages}
+
+% code
+\usepackage{minted}
+\usepackage{listings}
+
+% ~~~~~~~~~ TYPESETTING AND OTHER MACROS ~~~~~~~~~~~~~~~~~~~~~
+
+\newenvironment{absolutelynopagebreak}
+  {\par\nobreak\vfil\penalty0\vfilneg
+   \vtop\bgroup}
+  {\par\xdef\tpd{\the\prevdepth}\egroup
+   \prevdepth=\tpd}
+
+% ~~~~~~~~~ AFANCY CHAPTER HEADINGS ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\makeatletter
+\def\thickhrulefill{\leavevmode \leaders \hrule height 1ex \hfill \kern \z@}
+\def\@makechapterhead#1{%
+  %\vspace*{50\p@}%
+  \vspace*{10\p@}%
+  {\parindent \z@ \centering \reset@font
+        \thickhrulefill\quad
+        \scshape \@chapapp{} \thechapter
+        \quad \thickhrulefill
+        \par\nobreak
+        \vspace*{10\p@}%
+        \interlinepenalty\@M
+        \hrule
+        \vspace*{10\p@}%
+        \Huge {\textbf{#1}} \par\nobreak
+        \par
+        \vspace*{10\p@}%
+        \hrule
+    \vskip 40\p@
+    % \vskip 100\p@
+  }}
+\def\@makeschapterhead#1{%
+  %\vspace*{50\p@}%
+  \vspace*{10\p@}%
+  {\parindent \z@ \centering \reset@font
+        \thickhrulefill
+        \par\nobreak
+        \vspace*{10\p@}%
+        \interlinepenalty\@M
+        \hrule
+        \vspace*{10\p@}%
+        \Huge \bfseries #1\par\nobreak
+        \par
+        \vspace*{10\p@}%
+        \hrule
+    \vskip 40\p@
+    % \vskip 100\p@
+  }}
+
+  \newcommand*{\@rowstyle}{}
+  \newcommand*{\rowstyle}[1]{% sets the style of the next row
+    \gdef\@rowstyle{#1}%
+    \@rowstyle\ignorespaces%
+  }
+  \newcolumntype{=}{% resets the row style
+    >{\gdef\@rowstyle{}}%
+  }
+  \newcolumntype{+}{% adds the current row style to the next column
+    >{\@rowstyle}%
+  }
+  
+\usepackage[pdftex,outline]{contour}
+
+% ~~~~~~~~~ MATH MACROS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+% abs value macro
+% \DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\newcommand\abs[1]{\left|#1\right|}
+\newcommand\abss[1]{\left|\left|#1\right|\right|}
+\newcommand\norm[1]{\left\lVert#1\right\rVert}
+\newcommand\angled[1]{\left\langle#1\right\rangle}
+\newcommand\round[1]{\left\lfloor#1\right\rceil}
+
+\newcommand\dist[1]{\left|\left|#1\right|\right|}
+\newcommand\arr[1]{\left\langle#1\right\rangle}
+\newcommand\pdpi[0]{\frac{\partial}{\partial p_i}}
+
+% define the laplace operator 
+\newcommand*\Laplace{\mathop{}\!\mathbin\nabla^2}
+\newcommand\vek[1]{\vec{\bm{#1}}}
+\newcommand\nvek[1]{\hat{\vec{\bm{#1}}}}
+\newcommand\mat[1]{{\mathds{#1}}}
+\newcommand\br[1]{\left(#1\right)}
+
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\erf}{erf}
+
+\DeclareMathOperator*{\argmax}{\arg\!\max}
+\DeclareMathOperator*{\argmin}{\arg\!\min}
+
+\newcommand\divergence{{\nabla\cdot}}
+
+
+% clickable links
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+\renewcommand{\itemautorefname}{Item}
+% citations
+\usepackage[
+  backend=biber,
+  sorting=none,
+  style=ieee,
+%   doi=false,
+  % isbn=false,
+%   url=false,
+  eprint=false
+]{biblatex}
+\addbibresource{refs.bib}
+
+% arabic replacements in bibtex
+\usepackage{arabtex}
+\usepackage{utf8}
+\setcode{utf8}
+\setarab
+
+\author{Julian Karrer}
+\title{Project Proposal: Numerical Optimization}
+
+\begin{document}
+\maketitle
+
+\section*{Introduction}
+Since the topic came up during the Q\&A session today, I wanted to quickly elaborate on the problem I am interested in, to get some feedback on what a viable project for the Numerical Optimization course might look like and how to reduce the larger problem to something more feasible. I wanted to quickly give some context and write down some ideas I had for turning it into a smaller project.
+
+\section*{SPH basics}
+Smoothed Particle Hydrodynamics is an interpolation scheme that allows arbitrary scalar or vector-valued field quantities that are known at discrete positions $\vek{x}_i$ to be interpolated smoothly to any position by convolving the field with a Gaussian-like kernel function $W_{ij}=W\br{\abss{\vek{x}_i - \vek{x}_j}, \hbar}$ which is compactly supported with radius $\hbar$. The field $A_i$ at $\vek{x}_i$ can then be approximated by a sum over nearby particles $\mathcal{N}_i$ within $\hbar$, and gradients of $A$ can be found by simply summing the easy-to-compute gradients of the kernel function \autocite{tutorial2022}:
+\begin{align*}
+    A_i &\approx \sum_{j\in\mathcal{N}_i} A_j V_j W_{ij}\\
+    \nabla A_i &\approx \sum_{j\in\mathcal{N}_i} A_j V_j \nabla W_{ij}
+\end{align*}
+where $V_j$ is the volume of particle $j$. 
+
+\section*{The problem I actually want to solve}
+A simple, standard problem is simulating a resting water column under hydrostatic pressure, where the higher the column of water that can be simulated without oscillations or volume loss, and the faster, the better.\\
+
+When using SPH for Lagrangian fluid simulation of incompressible, low-viscosity liquids such as water (\url{https://youtu.be/fPKtv8QOaYw}), pressure forces are typically dominant. Therefore, operator splitting is usually applied: viscosity, gravity and other external forces are integrated explicitly, and the stiff subproblem of computing pressure values such that each particle is uncompressed is done implicitly. This yields a linear system called the Pressure Poisson equation or PPE \autocite{tutorial2022}, which can be writen in matrix form:
+\begin{equation}
+    \mat{A}\vek{p} = \vek{s}
+\end{equation}
+where source term $\vek{s}$ expresses: "\textit{what is the predicted density at particle $i$ due to gravity, viscosity etc. pushing particles together, compared to some target rest density $\rho_0$}" and the linear map $\br{\mat{A}\vek{p}}_i$ computes for each particle $i$ "\textit{given pressures $\vek{p}$, how much is the density at particle $i$ predicted to change due to pressure accelerations in the direction of the negative pressure gradient pushing particles apart}". When the density error due to external forces $\vek{s}$ is exactly balanced by the density correction caused by pressure forces $\mat{A}\vek{p}$, the $\vek{p}$ solves the PPE and the pressure is valid.\\
+
+$\mat{A}$ is symmetric since pressure forces must be symmetric (I am not entirely convinced this the case if particles don't have uniform volumes), and is positive semidefinite. $\mat{A}$ represents a discrete Laplacian of the pressure field with some additional factors (time step $\Delta t^2$, $-1$ depending on the formulation etc.) and is typically assumed to be strictly diagonally dominant (I am pretty sure this is wrong in some unfortunate cases, like when tensile instability causes two particles to be in the same spot/too close together).\\
+
+$\mat{A}$ is $N\times N$ with $N$ typically in the millions, so it is never constructed explicitly, although it is extremely sparse since each particle only interacts with about $<30$ neighbours in 3D and $\sim 10$ neighbours in 2D. The diagonal elements can be (painfully) derived, which is why Jacobi iteration is often used to solve this.  Without use of AD tools, which is rarely or never attempted, I don't think anyone ever saw what the off-diagonals look like.
+
+
+% \section*{The problem with this problem}
+
+
+\section*{Why projected Jacobi annoys me}
+Typically \autocite{iisph}, a relaxed Jacobi iteration is used to solve the linear system. Unfortunately, SPH underestimates the density at the surface of the fluid, since there are fewer neighbouring particles, which means that the density there can drop below rest density $\rho_0$. Simply solving the system above then leads to clumping at the surface, or no solution at all if the liquid has a lot of free surface area - instead people in practice project each Jacobi iteration to positive values, simply clamping pressures in each iteration to positive values. So really, there is an inequality constraint that $\vek{p}\geq 0$ should hold which is solved rather ad-hoc. 
+
+In other words, we find \textit{non-negative} pressures such that only \textit{compression} $\max\br{0, \frac{\rho_i}{\rho_0}-1}$ (and not any density error $\sfrac{\rho_i}{\rho_0}$) is prevented up to some tolerance threshold. Unfortunately, this is trivially true if all pressures are extremely high, since if the liquid explodes it is clearly not compressed. In my opinion, this means that the problem is ill-posed and explains why the projected relaxed Jacobi iteration is unstable and explodes when the pressure solver is initialized to a $\vek{p}_0$ that is too high, while it is relatively stable for a cold-started $\vek{p}_0=\vek{0}$, which is annoyingly inefficient since time steps are small and pressures don't change much from previous solutions in each time step.\\
+
+\section*{What I think is correct}
+Instead, I think that the true pressure field one should compute is the \textit{least} pressure field under some norm that prevents compressions. I'm pretty sure that the least pressure field, if pressure at boundaries is zero, leads to the smallest pressure gradients that still enforce incompressibility, which by Gauss's principle of least constraint  \autocite[can be shown to yield]{least-pressure} the physically correct pressures. That would lead to an optimization problem:
+
+\begin{align*}
+    \min_{\vek{p}\in\mathds{R}^N} &\abss{\vek{p}}_L\\
+    \text{s.t.}\quad\quad \vek{p}&\geq 0\\
+    \mat{A}\vek{p} - s &\geq 0
+\end{align*}
+where as far as I know $L=1$ and $L=\infty$ would make this an LP. Then, we would truly find the \textit{least}, \textit{positive} pressure that ensures no compression. I don't think the feasible set here is always non-empty, since shocks can occur that cause compressions which cannot be resolved in one time step to lie below a fixed maximum density error, so maybe an exact penalty method which penalizes $ \mat{A}\vek{p} - s$ as part of the objective is more appropriate, although a sensible weighting might be hard to derive. I also thought about splitting this lexicographically into two problems using slack variables, where first I find the minimum violation $\mat{A}\vek{p} - s$ and then minimize the pressure field. Both of these approaches don't seem performance-viable with current general LP solvers, since $\mat{A}\vek{p}$ is an extremely large, sparse linear map computed on the GPU. I looked into Nvidia's GPU solver CuOpt, which was released only a few weeks ago, but it seems like a pain to use in this case (it's largely undocumented C code), and not to be performant enough to solve this system in fractions of a second. If I ignore performance, this might be a viable project though?
+
+\section*{Why nonlinear nonsmooth conjugate gradients solvers annoy me less}
+Recently, the slow convergence of the cold-started projected relaxed Jacobi solver was suggested to be improved \autocite[by Probst \& Teschner from our Computer Graphics group]{unified-pressure}, who built on work by \autocite[Silcowitz-Hansen et. al]{nncg} (whose paper reads more like a numerical optimization paper). It is done by interpreting the difference in Jacobi iterates as a residual function $R(\vek{p}^k)$ and bringing it to zero in a least-squares minimization using Fletcher-Reeves type nonlinear nonsmooth conjugate gradients (the algorithm is described in \autocite[Appendix B, page 27]{unified-pressure}). This is equivalent to solving the linear complementary problem \autocite{unified-pressure}:
+
+\begin{align*}
+    0\leq \vek{p} \quad\bot\quad \vek{\rho}_{error} \geq 0
+\end{align*}
+
+I'd be interested in implementing this, testing if other non-smooth CG methods like those by \autocite{non-smooth-cg} Hestenes-Stiefel,  Polak-Ribière, Dai-Yuan etc. can yield improvements or investigating other Newton-Type methods to accelerate the inner Jacobi solver, so long as it only requires the approximate gradient information derived from the Jacobi iterates. I already have a working Jacobi-based SPH pressure solver, so this is feasible workload-wise.
+
+It would be even nicer to find a scalable algorithm that can efficiently solve the full LP instead of this LCP, since the LCP approach shares the problems of the Jacobi sub-solver and I ideally want a solver that can be aggressively warm-started.
+
+\section*{What do I do?}
+For this project, I could try (sorted by the keywords in the project guidlines):
+\begin{itemize}
+    \item (CLASS OF PROBLEM) Implementing the algorithm by Probst \& Teschner and comparing it to the regular Jacobi variant of SPH pressure solver for fluids. This might be hard to explain in 10 minutes but very interesting and doable since I already have the Jacobi subsolver.
+    \item (CLASS OF PROBLEM) Checking alternative NNCG methods or other Newton-type methods for solving this LCP.
+    \item (ALGORITHM) Exploring other Krylov-subspace methods like GMRES with fewer requirements on $\mat{A}$ to solve the linear system $\mat{A}\vek{p}-\vek{s}=0$ / minimize the corresponding quadratic
+\end{itemize}
+Or perhaps something smaller:
+\begin{itemize}
+    \item (ALGORITHM) Getting a feel for CG methods in general by implementing CG on the GPU and attempting to integrate inequality constraints for an easier problem as you suggested. I joyfully noticed that the hanging chain example in exercise sheet 5 seems to have a symmetric, positive definite matrix $\mat{Q}$ I could try this on. However, I am not convinced that adding inequality constraints using barrier functions will be easy to do or not mess up the convergence of CG? As far as I know even the nonlinear CG variants only help if the minimized function is close to a quadratic form near the solution?
+    \item (ALGORITHM) Implementing and comparing nonlinear CG algorithms for suitable toy problems. This should be doable and fun. I imagined something similar to the illustrations \autocite[on page 44 of this report]{agonizing-cg}. A downside is that if the implementation is more challenging than I tought I could be stuck.
+    \item (APPLICATION) Implementing a basic 2D SPH fluid solver in Python and using CasADi to solve the LP I envisioned for minimum non-negative pressure values. This might be slow, but I would be interested in seeing how the solution compares to that of the usual solvers and if there is any improvement in how robustly the LP approach handles sudden shocks or how smooth the solution is temporally in a dynamic setting. This should certainly be feasible and interesting.
+\end{itemize}
+
+Which of these do you think would be best? Do any of these suggestions seem unfitting for the course project? Do you think the barrier function in CG will work? Can I swap topics later if I notice later that I chose one that is too difficult or yields no good insights? Can I just choose any of these?
+
+\printbibliography[
+  heading=bibintoc,
+  title={Bibliography}
+]
+
+\end{document}
