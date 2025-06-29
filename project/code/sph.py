@@ -12,8 +12,8 @@ import casadi as ca
 h : float = 0.1         # kernel smoothing length
 ρ_0 : float = 1.0       # rest density
 k_eos : float = 750.    # stiffness constant for equation of state
-nu : float = 0.001      # viscosity 
-dt : float = 5e-3       # time step size
+nu : float = 0.000      # viscosity 
+dt : float = 10e-3      # time step size
 
 # SETTINGS
 FPS : float = 165       # target GUI FPS
@@ -48,7 +48,7 @@ def W(r):
     return alpha * (t1**3 - 4*t2**3)
 
 def W_ca(r):
-    '''Cubic Spline Kernel Function'''
+    '''Cubic Spline Kernel Function (CasADi firendly version)'''
     alpha = 5.0 / (14.0 * np.pi * h * h)
     q = r / h;
     t1 = ca.fmax(0., (2-q))
@@ -69,6 +69,30 @@ def dW(x_ij:np.ndarray)->np.ndarray:
     else:
         return np.zeros_like(x_ij)
 
+def dW_ca(dx, dy):
+    '''Gradient of the Cubic Spline Kernel Function (CasADi firendly version)'''
+    r = ca.sqrt(dx*dx + dy*dy)
+    alpha = 5.0 / (14.0 * np.pi * h * h)
+    q = r / h;
+    t1 = ca.fmax(2-q, 0)
+    t2 = ca.fmax(1-q, 0)
+    factor = alpha / (h * r) * (-3*t1**2 + 12*t2**2)
+    return (factor * dx, factor * dy)
+
+
+# COMPUTE APPROXIMATE "OPTIMAL" STIFFNESS COEFFICIENT
+# For the ideal gas equation as an equation of state, this corresponds
+# to δ in the paper:
+# Predictive-Corrective Incompressible SPH [Solenthaler and Pajarola]
+# https://www.ifi.uzh.ch/dam/jcr:ffffffff-daa5-74d6-0000-00005a4f5c99/pcisph.pdf
+# This can be used as a guess for relating pressure and density errors as
+# p = δ * Δρ
+xs,ys = np.meshgrid(np.linspace(-2*h, 2*h, 5), np.linspace(-2*h, 2*h, 5))
+xs_perfect = np.stack([xs.ravel(), ys.ravel()], axis=1)
+β = dt**2 * m**2 * 2/ρ_0
+squared_grad_sum = (ΣdW := np.sum([dW(xs_perfect[j]) for j in range(len(xs_perfect))], axis=0)).dot(ΣdW)
+grad_squared_sum = sum([(grad:= dW(xs_perfect[j])).dot(grad) for j in range(len(xs_perfect))])
+δ_pcisph = -1/(β * (-squared_grad_sum -grad_squared_sum))
 
 # INITIALIZE FIELD QUANTITIES
 x = box(0, box_x+h, 0, box_y,h)                     # positions x
@@ -85,7 +109,8 @@ a = np.zeros_like(x)    # accelerations
 rho = np.zeros(N)       # densities
 p = np.zeros(N)         # pressures
 
-# COLLECT VALUES FOR LATER VISUALIZATION
+
+# BUFFER RESULTS FOR LATER ANALYSIS
 all_xs = []
 all_ps = []
 
@@ -102,6 +127,8 @@ view.add(scatter_bdy)
 view.camera = 'panzoom'
 view.camera.set_range(x=(-1, box_x+1), y=(-1, box_y+2)) # type: ignore
 
+
+# ERROR MEASURES
 def predicted_compr_error(p,x,v,rho,nbrs,nbrs_b):
     """Computes the per-particle predicted density error given a set of pressures,
     and predicted densities. Returned positive values correspond to compressions."""
@@ -111,11 +138,12 @@ def predicted_compr_error(p,x,v,rho,nbrs,nbrs_b):
         a_x = 0.
         a_y = 0.
         for j in nbrs[i]:
-            dw = dW(x[i]-x[j])
+            if i==j: continue
+            dw = dW_ca(x[i][0]-x[j][0], x[i][1]-x[j][1])
             a_x += -m * (p[i]/(rho[i]**2) + p[j]/(rho[j]**2)) * dw[0]
             a_y += -m * (p[i]/(rho[i]**2) + p[j]/(rho[j]**2)) * dw[1]
         for k in nbrs_b[i]:
-            dw = dW(x[i]-b[k])
+            dw = dW_ca(x[i][0]-b[k][0], x[i][1]-b[k][1])
             a_x += -m * (p[i]/(rho[i]**2)) * dw[0]
             a_y += -m * (p[i]/(rho[i]**2)) * dw[1]
         # compute predicted velocities from those pressure accelerations
@@ -125,12 +153,13 @@ def predicted_compr_error(p,x,v,rho,nbrs,nbrs_b):
         # compute predicted density from predicted positions
         rho_i = rho[i] 
         for j in nbrs[i]:
-            dw = dW(x[i]-x[j])
+            if i==j: continue
+            dwx, dwy = dW_ca(x[i][0]-x[j][0], x[i][1]-x[j][1])
             v_ij_x = v_pred[i][0]-v_pred[j][0]
             v_ij_y = v_pred[i][1]-v_pred[j][1]
-            rho_i += dt * m * (dw[0]*v_ij_x + dw[1]*v_ij_y)
+            rho_i += dt * m * (dwx*v_ij_x + dwy*v_ij_y)
         for k in nbrs_b[i]:
-            dw = dW(x[i]-b[k])
+            dw = dW_ca(x[i][0]-b[k][0], x[i][1]-b[k][1])
             rho_i += dt * m * (dw[0]*v_pred[i][0] + dw[1]*v_pred[i][1])
         # compute error from predicted densities
         err_pred += [rho_i - ρ_0]
@@ -141,13 +170,15 @@ def predicted_compr_error_exact(p,x,v,rho,nbrs,nbrs_b):
     and predicted densities. Returned positive values correspond to compressions."""
     x_pred = []
     for i in range(N):
-        # compute pressure acceleration from p_ca
+        # compute pressure acceleration from pressures
+        # a_prs_i = -Σ_j m_j (p_i/ρ_i² + p_j/ρ_j²) ∇W_ij  -Σ_k m_k (p_i/ρ_i²) ∇W_ik
         a_x = 0.
         a_y = 0.
         for j in nbrs[i]:
-            dw = dW(x[i]-x[j])
-            a_x += -m * (p[i]/(rho[i]**2) + p[j]/(rho[j]**2)) * dw[0]
-            a_y += -m * (p[i]/(rho[i]**2) + p[j]/(rho[j]**2)) * dw[1]
+            if i==j: continue
+            dwx, dwy = dW_ca(x[i][0]-x[j][0], x[i][1]-x[j][1])
+            a_x += -m * (p[i]/(rho[i]**2) + p[j]/(rho[j]**2)) * dwx
+            a_y += -m * (p[i]/(rho[i]**2) + p[j]/(rho[j]**2)) * dwy
         for k in nbrs_b[i]:
             dw = dW(x[i]-b[k])
             a_x += -m * (p[i]/(rho[i]**2)) * dw[0]
@@ -169,32 +200,52 @@ def predicted_compr_error_exact(p,x,v,rho,nbrs,nbrs_b):
     return ca.vertcat(*err_pred) 
 
 def dirichlet_energy(p, x, nbrs, nbrs_b):
+    """Compute the Dirichlet energy of the pressure field 
+    (the squared norm of all pressure gradients).
+
+    ∫ |∇p|² ≅ | -m_i ρ_i a_prs_i |² 
+    where a_prs_i is the SPH discretization of the pressure acceleration.
+    """
     res = 0.
     for i in range(N):
         nabla_p_x = 0.
         nabla_p_y = 0.
         for j in nbrs[i]:
-            dw = dW(x[i]-x[j])
-            nabla_p_x += rho[i] * m * (p[i]/(rho[i]**2) + p[j]/(rho[j]**2)) * dw[0]
-            nabla_p_y += rho[i] * m * (p[i]/(rho[i]**2) + p[j]/(rho[j]**2)) * dw[1]
+            if i==j: continue
+            dwx, dwy = dW_ca(x[i][0]-x[j][0], x[i][1]-x[j][1])
+            nabla_p_x += rho[i] * m * (p[i]/(rho[i]**2) + p[j]/(rho[j]**2)) * dwx
+            nabla_p_y += rho[i] * m * (p[i]/(rho[i]**2) + p[j]/(rho[j]**2)) * dwy
+            # non-symmetric SPH gradient discretization would be:
             # nabla_p_x += p[j] * m/rho[j] * dw[0]
             # nabla_p_y += p[j] * m/rho[j] * dw[1]
         for k in nbrs_b[i]:
-            dw = dW(x[i]-b[k])
-            nabla_p_x += rho[i] * m * (p[i]/(rho[i]**2)) * dw[0]
-            nabla_p_y += rho[i] * m * (p[i]/(rho[i]**2)) * dw[1]
-        res += (nabla_p_x*nabla_p_x + nabla_p_y * nabla_p_y)#/k_eos/N
+            dwx, dwy = dW_ca(x[i][0]-b[k][0], x[i][1]-b[k][1])
+            nabla_p_x += rho[i] * m * (p[i]/(rho[i]**2)) * dwx
+            nabla_p_y += rho[i] * m * (p[i]/(rho[i]**2)) * dwy
+        res += (nabla_p_x*nabla_p_x + nabla_p_y * nabla_p_y)
     return res
 
 
-# MAIN FUNCTION
-def main(event=None):
-    global x,v,a,rho,p,all_xs,all_ps
-
-    # NEIGHBOUR SEARCH
-    tree_x = cKDTree(x) # KDTree for fixed radius neighbour query
+# SPH FUNCTIONS
+def update_neighbour_sets(x):
+    """Return an updated index set of fluid and boundary neighbour indices,
+    given a vector of fluid particle positions `x`"""
+    # KDTree for fixed radius neighbour query
+    tree_x = cKDTree(x) 
+    # find indices of neighbouring fluid and boundary particles
     nbrs = tree_x.query_ball_point(x, r_nb)
     nbrs_b = tree_b.query_ball_point(x, r_nb)
+    return nbrs, nbrs_b
+
+
+# MAIN FUNCTION
+lam_g = None # store lambda g values for warm starts
+nbrs_cas = None
+nbrs_b_cas = None
+def main(event=None):
+    global x,v,a,rho,p,all_xs,all_ps,lam_g,nbrs_cas,nbrs_b_cas,p_ca,opti
+    # NEIGHBOUR SEARCH
+    nbrs, nbrs_b = update_neighbour_sets(x)
 
     # UPDATE DENSITY
     rho = np.fromiter(( 
@@ -212,72 +263,77 @@ def main(event=None):
             for j in nbrs[i]
         ])
 
-    # INTEGRATE A -> V
-    v += dt*a
+    for _ in range(1):
+        # INTEGRATE A -> V
+        v += dt*a
 
-    # UPDATE PREDICTED DENSITY
-    rho_star = np.fromiter(( 
-        rho[i] + 
-        sum([
-            dt * m * (dW(x[i]-x[j])).dot(v[i]-v[j])
-            for j in nbrs[i]
-        ]) + sum([
-            dt * m * (dW(x[i]-b[k])).dot(v[i])
-            for k in nbrs_b[i]
-        ])
-        for i in range(N)), float)
+        # UPDATE PREDICTED DENSITY
+        rho_star = np.fromiter(( 
+            rho[i] + 
+            sum([
+                dt * m * (dW(x[i]-x[j])).dot(v[i]-v[j])
+                for j in nbrs[i]
+            ]) + sum([
+                dt * m * (dW(x[i]-b[k])).dot(v[i])
+                for k in nbrs_b[i]
+            ])
+            for i in range(N)), float)
 
-    # COMPUTE PRESSURE GUESS from equation of state (ideal gas, k_eos)
-    p = np.fromiter(( k_eos * max(0, rho[i]-ρ_0) for i in range(N)), float)
-    
-    if True:
-        # compute pressures with casadi
-        opti = ca.Opti()
-        opti.solver('ipopt', {})
-        p_ca = opti.variable(N)
+        if True:
+            opti = ca.Opti()
+            opti.solver("ipopt", {})
+            p_ca = opti.variable(N)
+
+            # err represents the per-particle predicted density error
+            # where positive values correspond to compressions.
+            # err = predicted_compr_error(p_ca, x, v, rho, nbrs, nbrs_b)
+            err = predicted_compr_error_exact(p_ca, x, v, rho, nbrs, nbrs_b)
+
+            # # optimization problem formulation
+            # opti.minimize(ca.sumsqr(err) + 1e-2*ca.sumsqr(p_ca*(1/δ_pcisph)))
+            # opti.subject_to( p_ca >= 0 )
+
+            # # minimize sum of squares of pressure
+            # opti.minimize(ca.sumsqr(p_ca*(1/δ_pcisph)))
+            # opti.subject_to( err <= 0.1e-2 )
+            # opti.subject_to( p_ca >= 0 )
+
+            # # minimize dirichlet energy
+            # opti.minimize(dirichlet_energy(p_ca, x, nbrs, nbrs_b))
+            # opti.subject_to( err <= 0.1e-2 )
+            # opti.subject_to( p_ca >= 0 )
+
+            # no errors allowed
+            opti.minimize(dirichlet_energy(p_ca, x, nbrs, nbrs_b))
+            opti.subject_to( err <= 0 )
+            opti.subject_to( p_ca >= 0 )
+
+            # warm-start primal and dual values from previous solve
+            opti.set_initial(p_ca, p)
+            if not (lam_g is None):
+                opti.set_initial(opti.lam_g, lam_g)
+
+            # solve the problem and grab the resulting pressures!
+            sol = opti.solve()
+            p = sol.value(p_ca)
+            lam_g = sol.value(opti.lam_g)
+            print("step no.", len(all_xs))
+            print("resultant error:", np.max(sol.value(err)))
+            print("avg pressure", np.average(p))
+        else:
+            # COMPUTE PRESSURE GUESS from equation of state (ideal gas, δ_pcisph)
+            p = np.fromiter(( δ_pcisph * max(0, rho_star[i]-ρ_0) for i in range(N)), float)
         
-        # err represents the per-particle predicted density error
-        # where positive values correspond to compressions.
-        err = predicted_compr_error_exact(p_ca, x, v, rho_star, nbrs, nbrs_b)
-        # err = predicted_compr_error(p_ca, x, v, rho_star, nbrs, nbrs_b)
-
-        # optimization problem formulation
-
-        # opti.minimize(ca.sumsqr(err) + ca.sumsqr(p_ca*(1/k_eos)))
-        # opti.subject_to( err <= 0.1e-2 )
-        # opti.subject_to( p_ca >= 0 )
-
-        # # minimize sum of squares of pressure
-        # opti.minimize(ca.sumsqr(p_ca*(1/k_eos)))
-        # opti.subject_to( err <= 0.1e-2 )
-        # opti.subject_to( p_ca >= 0 )
-
-        # minimize dirichlet energy
-        opti.minimize(dirichlet_energy(p_ca, x, nbrs, nbrs_b))
-        opti.subject_to( err <= 0.1e-2 )
-        opti.subject_to( p_ca >= 0 )
-
-        # opti.minimize( ca.sumsqr(err) + 0.0001*ca.sumsqr(p_ca) )
-        # opti.subject_to( p_ca >= 0 )
-
-
-        opti.set_initial(p_ca, p)
-        sol = opti.solve()
-        p = sol.value(p_ca)
-        print("step no.", len(all_xs))
-        print("resultant error:", np.max(sol.value(err)))
-        print("avg pressure", np.average(p))
-
-    # COMPUTE PRESSURE ACCELERATIONS
-    for i in range(N):
-        # ρ_i = -Σ_j m_j (p_i/ρ_i² + p_j/ρ_j²) ∇W_ij  -Σ_k m_k (p_i/ρ_i²) ∇W_ik
-        a[i] = sum([
-            -m * (p[i]/(rho[i]**2) + p[j]/(rho[j]**2)) * dW(x[i]-x[j])
-            for j in nbrs[i]
-        ]) + sum([
-            -m * (p[i]/(rho[i]**2)) * dW(x[i]-b[k])
-            for k in nbrs_b[i]
-        ])
+        # COMPUTE PRESSURE ACCELERATIONS
+        for i in range(N):
+            # a = -Σ_j m_j (p_i/ρ_i² + p_j/ρ_j²) ∇W_ij  -Σ_k m_k (p_i/ρ_i²) ∇W_ik
+            a[i] = sum([
+                -m * (p[i]/(rho[i]**2) + p[j]/(rho[j]**2)) * dW(x[i]-x[j])
+                for j in nbrs[i]
+            ]) + sum([
+                -m * (p[i]/(rho[i]**2)) * dW(x[i]-b[k])
+                for k in nbrs_b[i]
+            ])
 
     # SEMI-IMPLICIT EULER TIME INTEGRATION
     v += dt*a
@@ -286,15 +342,15 @@ def main(event=None):
     # ENFORCE BOUNDARY CONDITIONS
     for i in range(N):
         gamma = 0               # stop the particle
-        border = 5              # how far outside before these conditions apply
+        border = 5                # how far outside before these conditions apply
         if x[i,0] < -border:        # left wall
-            x[i,0] = 0; v[i,0] *= gamma
+            x[i,0] = -border; v[i,0] *= gamma
         if x[i,0] > box_x+border:   # right wall
-            x[i,0] = box_x; v[i,0] *= gamma
+            x[i,0] = box_x+border; v[i,0] *= gamma
         if x[i,1] < -border:        # bottom wall
-            x[i,1] = 0; v[i,1] *= gamma
+            x[i,1] = -border; v[i,1] *= gamma
         if x[i,1] > box_y+border:   # top wall
-            x[i,1] = box_y; v[i,1] *= gamma
+            x[i,1] = box_y+border; v[i,1] *= gamma
 
     # save time step to history
     all_xs += [x[:]]
