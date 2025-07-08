@@ -15,12 +15,12 @@ format:
 fontsize: 24pt
 ---
 
+# Motivation {background-video="res/coast-cut.mp4" background-video-loop="true" background-video-muted="true" auto-animate=true}
+
 <style>
   /* :root{--r-link-color:white !important;} */
   .aside-footnotes{opacity:0.5; font-size:14pt;}  
 </style>
-
-# Motivation {background-video="res/coast-cut.mp4" background-video-loop="true" background-video-muted="true" auto-animate=true}
 
 ## Smoothed Particle Hydrodynamics {auto-animate=true}
 
@@ -173,5 +173,7 @@ $\begin{align}
 
 ## Results {auto-animate=true}
 - The fluid solver was implemented in Python using CasADi
+
+
 
 <!-- - $\begin{align}\nabla p_i \approx \rho_i \sum_{j \in \mathcal{N}_i} m_j \, \left( \frac{p_i}{\rho_i^2} + \frac{p_j}{\rho_j^2} \right) \, \nabla W_{ij}\end{align}$^[SPH Tutorial, Koshier et al. 2019] -->

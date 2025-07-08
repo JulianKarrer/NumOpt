@@ -13,7 +13,8 @@ H : float = 0.1     # particle spacing
 AROUND : int = 100
 
 # LOAD FILE
-with open("minAction_approx.save") as f:
+# with open("minAction_approx.save") as f:
+with open("conventional.save") as f:
     data = json.load(f)
 
 # COMPUTE CONSTANTS
@@ -22,6 +23,7 @@ N : int = len(data["xs"][0])
 NX : int = int(0.3*RES) + 2*AROUND
 NY : int = int(5.0*RES) + 2*AROUND
 MAX_P = max([max(data["ps"][i]) for i in range(STEPS)])
+MAX_rho = max([max(data["rhos"][i]) for i in range(STEPS)])
 print(NX,NY,MAX_P)
 
 # DEFINE TAICHI FIELDS
@@ -29,6 +31,7 @@ x = ti.Vector.field(n=2, dtype=ti.f32, shape=(N,), needs_grad=True) # positions
 p = ti.field(dtype=ti.f32, shape=(N,))                              # pressures
 pixels = ti.Vector.field(n=4, dtype=ti.f32, shape=(NX,NY))          # output pixels
 max_p = ti.field(dtype=ti.f32, shape=())                            # normalize pressure
+rho = ti.field(dtype=ti.f32, shape=(N,))                              # densities
 
 # MAP SCALARS TO COLOURS
 @ti.func 
@@ -99,7 +102,7 @@ def W(r:ti.float32):
     return alpha * (t1**3 - 4*t2**3)
 
 @ti.kernel
-def display(f:ti.template()):
+def display(f:ti.template(), maxi: ti.template()):
     for xi, yi in ti.ndrange(NX, NY):
         x_coord = (xi-AROUND)/RES
         y_coord = (yi-AROUND)/RES
@@ -114,7 +117,7 @@ def display(f:ti.template()):
             # otherwise:
             # magnitude += (M/rho[i]) * p[i] * W(tm.sqrt(dx*dx+dy+dy))
         # normalize to [0;1] for colour mapping
-        mag /= MAX_P
+        mag /= maxi
 
         # map the result to a colour
         c = colour_map(mag)
@@ -131,7 +134,9 @@ for i in range(STEPS):
     p_np = np.array(data["ps"][i]).reshape(N)
     x.from_numpy(np.array(data["xs"][i]))
     p.from_numpy(p_np)
-    display(p)
+    rho.from_numpy(np.array(data["rhos"][i]))
+    # display(rho, MAX_rho*4)
+    display(p, MAX_P/2)
     gui.set_image(pixels)
     gui.show()
 
