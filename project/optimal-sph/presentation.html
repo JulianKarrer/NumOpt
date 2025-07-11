@@ -32,7 +32,7 @@
       vertical-align: middle;
     }
   </style>
-  <link rel="stylesheet" href="presentation_files/libs/revealjs/dist/theme/quarto-5eb6ff3c5d5bfb0a5c7f1642bdc09d50.css">
+  <link rel="stylesheet" href="presentation_files/libs/revealjs/dist/theme/quarto-bc9a6017bff37531389cfaa95813d895.css">
   <link href="presentation_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="presentation_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
   <link href="presentation_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
@@ -149,27 +149,98 @@ Julian Karrer
 <style>
   /* :root{--r-link-color:white !important;} */
   .aside-footnotes{opacity:0.5; font-size:14pt;}  
+  .boxed{margin: 50px;
+  border: white 1px solid;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;}
+
+  .fragment.glow{filter: drop-shadow(0px 0px 10px #23cbfa00); transition: all 500ms ease;}
+  .fragment.glow.visible{filter: drop-shadow(0px 0px 10px #23cafa); transition: all 500ms ease;}
+  .fragment.glow > span.comment {opacity:0;}
+  .fragment.glow.visible > span.comment {opacity:1;}
+  .comment{
+    position: absolute;
+    bottom: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .spacer{margin-top:100px;}
 </style>
 </section>
-<section id="smoothed-particle-hydrodynamics" class="slide level2 center" data-auto-animate="true">
+<section id="lagrangian-hydrodynamics" class="slide level2" data-auto-animate="true">
+<h2 data-id="quarto-animate-title">Lagrangian Hydrodynamics</h2>
+<ul>
+<li>System State <span class="math inline">\(\vec{x}_1,\dots,\vec{x}_N\)</span> and <span class="math inline">\(\vec{v}_1,\dots,\vec{v}_N\)</span></li>
+<li>Constants: <span class="math inline">\(\vec{g}, m, \nu, N\)</span></li>
+<li>Decision variables: <span class="math inline">\(p_1,\dots, p_N\)</span></li>
+<li>Governing equations:</li>
+</ul>
+<div data-id="ns">
+<p><span data-id="ns-g"><span class="math inline">\(\ddot{\vec{x}}_i = \vec{g}\)</span></span> <span data-id="ns-nu"><span class="math inline">\(+\nu \nabla^2 \vec{v}_i\)</span></span> <span data-id="ns-p"> <span class="math inline">\(\underbrace{- \frac{1}{\rho_i}\nabla p_i}_{\text{Pressure Acceleration}}\)</span> </span></p>
+</div>
+<!-- $\vec{v}(t+\Delta t) = \vec{v}_i + \ddot{\vec{x}}_i \cdot \Delta t$
+
+$\vec{x}(t+\Delta t) = \vec{x}_i + \vec{v}_i \cdot \Delta t$ -->
+<div data-id="dencon">
+<p>subject to <span data-id="drho-dt"><span class="math inline">\(\frac{D\rho_i(\vec{x}_1,\dots,\vec{x}_N)}{Dt} = 0\)</span></span></p>
+</div>
+</section>
+<section id="discretization" class="slide level2" data-auto-animate="true">
+<h2 data-id="quarto-animate-title">Discretization</h2>
+<!-- continuous -->
+<ul>
+<li>Governing equations:</li>
+</ul>
+<div data-id="ns">
+<p><span class="math inline">\(\ddot{\vec{x}}_i = \vec{g}+\nu \nabla^2 \vec{v}_i- \frac{1}{\rho_i}\nabla p_i\)</span></p>
+</div>
+<div data-id="dencon">
+<p><span class="math inline">\(\frac{D\rho_i(\vec{x}_1,\dots,\vec{x}_N)}{Dt} = 0\)</span></p>
+</div>
+</section>
+<section id="discretization-1" class="slide level2" data-auto-animate="true">
+<h2 data-id="quarto-animate-title">Discretization</h2>
+<!-- discrete time -->
+<ul>
+<li>Governing equations:</li>
+</ul>
+<div data-id="ns">
+<p><span class="math inline">\(\ddot{\vec{x}}_i = \vec{g}+ \langle\nu \nabla^2 \vec{v}_i\rangle- \frac{1}{\langle\rho_i\rangle}\langle\nabla p_i\rangle\)</span></p>
+</div>
+<div data-id="dencon">
+<p><span class="math inline">\(\left\langle\rho_i\left(\begin{array}{c}
+\vec{x}_1(t+\Delta t)\\\dots\\\vec{x}_N(t+\Delta t)
+\end{array}\right)\right\rangle = \rho_0\)</span></p>
+</div>
+</section>
+<section id="smoothed-particle-hydrodynamics" class="slide level2" data-auto-animate="true">
 <h2 data-id="quarto-animate-title">Smoothed Particle Hydrodynamics</h2>
 <!-- $\begin{align}A(\vec{x}_i) &= \int_\Omega &A(\vec{x}_j) \delta(\vec{x}_j - \vec{x})  \,dV\\A_i &\approx \sum_{j \in \mathcal{N}_i} \frac{m_j}{\rho_j} &A_j  W(\vec{x}_i - \vec{x}_j, \hbar)\end{align}$ -->
 <!-- - $A(\vec{x}_i) = \int_\Omega A(\vec{x}_j) \delta(\vec{x}_j - \vec{x})  dV$ -->
+<div style="font-size: 14pt;">
 <p><span class="math inline">\(\begin{align}
-A_i &amp;\approx \sum_{j \in \mathcal{N}_i} \frac{m_j}{\rho_j} \, A_j \, W_{ij}\qquad\qquad
-\nabla A_i \approx \rho_i \sum_{j \in \mathcal{N}_i} m_j \, \left( \frac{A_i}{\rho_i^2} + \frac{A_j}{\rho_j^2} \right) \, \nabla W_{ij}
+\langle f_i\rangle &amp;= \sum_{j \in \mathcal{N}_i} \frac{m}{\rho_j} \, f_j \, W_{ij}\qquad
+\langle\nabla f_i\rangle = \rho_i \sum_{j \in \mathcal{N}_i} m \, \left( \frac{f_i}{\rho_i^2} + \frac{f_j}{\rho_j^2} \right) \, \nabla W_{ij}\qquad
+\langle \nabla \cdot \vec{f}_i \rangle = -\frac{1}{\rho_i} \sum_{j \in \mathcal{N}_i} m \left(\vec{f}_i - \vec{f}_j\right) \cdot \nabla W_{ij}
 \end{align}\)</span></p>
+</div>
 <!-- $\begin{align}A(\vec{x}_i) &\approx \sum_{j \in \mathcal{N}_i} V_j A_j W(\vec{x}_{ij}, \hbar)\\\nabla A(\vec{x}_i) &\approx \sum_{j \in \mathcal{N}_i} V_j A_j \nabla W(\vec{x}_{ij}, \hbar)\end{align}$
 
 - Sum over neighbours $\mathcal{N}_i := \left\{\vec{x} : \, \left|\left|\vec{x}_i-\vec{x}\right|\right|_2 \leq \hbar\,  \right\}$ -->
 <ul>
-<li>Gaussian Kernel <span class="math inline">\(W_{ij} := W(\vec{x}_i - \vec{x}_j, \hbar)\)</span> with smoothing length <span class="math inline">\(\hbar\)</span><sup>1</sup></li>
+<li><span style="font-size:16pt;">2D Gaussian Kernel<sup>1</sup> such as <span class="math inline">\(W_{ij} := W(\vec{x}_i - \vec{x}_j, \hbar) = \frac{16}{\pi\hbar^2}\cdot \max\left(0,1-\frac{\left|\vec{x}_i-\vec{x}_j\right|}{\hbar}\right)^3 - 4\cdot \max\left(0,\frac{1}{2} - \frac{\left|\vec{x}_i-\vec{x}_j\right|}{\hbar}\right)^3\)</span></span></li>
 </ul>
 <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
-<canvas id="smooth_canv" width="800" height="200" style="border:1px solid #444;">
+<div style="display: flex; justify-content: center; align-items: center; flex-direction: row;">
+<canvas id="smooth_canv" width="500" height="300" style="border:1px solid #444;">
 </canvas>
+<canvas id="kernel_canv" width="500" height="300" style="border:1px solid #444; margin-left:50px;">
+</canvas>
+</div>
 <br>
-<div style="display: flex;">
+<div style="display: flex; font-size:14pt; margin-top:20px;">
 <span class="math inline">\(\hbar\)</span> <span style="width:20px"></span><input type="range" id="smoothing_length" min="5" max="300" value="10">
 </div>
 </div>
@@ -185,9 +256,11 @@ A_i &amp;\approx \sum_{j \in \mathcal{N}_i} \frac{m_j}{\rho_j} \, A_j \, W_{ij}\
   particle_img.onload = () => {
     particles.push([0.5,0.5])
     draw_particles();
+    draw_kernel();
   };
   slider.addEventListener('input', () => {
     draw_particles();
+    draw_kernel();
   }); 
   canvas.addEventListener('click', evt => {
     // get click pos relative to canvas
@@ -204,6 +277,21 @@ A_i &amp;\approx \sum_{j \in \mathcal{N}_i} \frac{m_j}{\rho_j} \, A_j \, W_{ij}\
     }
   });
 
+  function draw_kernel(){
+    W = (q)=> Math.pow(Math.max(1-q,0), 3) - 4*Math.pow(Math.max(0.5-q,0), 3)
+    const w = canvas.width, h = canvas.height;
+    const ctx = document.getElementById('kernel_canv').getContext('2d');
+    ctx.clearRect(0, 0, w, h);
+    const size = (+slider.value)/300;
+    ctx.strokeStyle = "#ddd";
+    ctx.beginPath();
+    ctx.moveTo(0,4*h/5);
+    for (let x=0; x<w; x+=2){
+      f_x = -W(Math.abs((x-0.5*w)/(w*0.6*size)))/0.8*h+4*h/5
+      ctx.lineTo(x, f_x);
+    }
+    ctx.stroke();
+  }
 
   function draw_particles() {
     const w = canvas.width, h = canvas.height;
@@ -224,7 +312,59 @@ A_i &amp;\approx \sum_{j \in \mathcal{N}_i} \frac{m_j}{\rho_j} \, A_j \, W_{ij}\
   
 </script>
 <aside><ol class="aside-footnotes"><li id="fn1"><p>SPH Tutorial, Koshier et al.&nbsp;2019</p></li></ol></aside></section>
-<section id="what-we-need-to-solve" class="slide level2 center" data-auto-animate="true">
+<section id="discretization-2" class="slide level2" data-auto-animate="true">
+<h2 data-id="quarto-animate-title">Discretization</h2>
+<!-- discrete time -->
+<ul>
+<li>Governing equations:</li>
+</ul>
+<div data-id="ns">
+<p><span class="math inline">\(\ddot{\vec{x}}_i = \vec{g}+ \langle\nu \nabla^2 \vec{v}_i\rangle- \frac{1}{\langle\rho_i\rangle}\langle\nabla p_i\rangle\)</span></p>
+</div>
+<div data-id="dencon">
+<p><span class="math inline">\(\left\langle\rho_i\left(\begin{array}{c}
+\vec{x}_1(t+\Delta t)\\\dots\\\vec{x}_N(t+\Delta t)
+\end{array}\right)\right\rangle = \rho_0\)</span></p>
+</div>
+<div class="fragment">
+<div class="spacer">
+
+</div>
+<div data-id="drho-dt">
+<p><span class="math inline">\(\left\langle\rho_i\right\rangle
++ \Delta t \left\langle \frac{D\rho_i}{Dt} \right\rangle
+= \rho_0\)</span></p>
+</div>
+</div>
+<div class="spacer">
+
+</div>
+</section>
+<section id="discretization-3" class="slide level2" data-auto-animate="true">
+<h2 data-id="quarto-animate-title">Discretization</h2>
+<ul>
+<li>Governing equations:</li>
+</ul>
+<div data-id="ns">
+<p><span class="math inline">\(\ddot{\vec{x}}_i = \vec{g}+ \langle\nu \nabla^2 \vec{v}_i\rangle- \frac{1}{\langle\rho_i\rangle}\langle\nabla p_i\rangle\)</span></p>
+</div>
+<div data-id="drho-dt">
+<p><span class="fragment custom glow"> <span class="math inline">\(\langle\rho_i \rangle\underbrace{-\Delta t \langle\rho_i\rangle \left\langle\nabla \cdot \left(\vec{v}_i +\Delta t \vec{g} + \Delta t \langle\nu \nabla^2\vec{v}_i\rangle\right)\right\rangle}_{\Delta \rho_i^{g,\nu}}\)</span> <span class="comment"><span class="math inline">\(\rho_i^*:=\)</span></span></span> <span><span class="math inline">\(+ \underbrace{\Delta t^2 \langle \nabla^2 p_i \rangle}_{\Delta \rho_i^{p}}\)</span></span> <span><span class="math inline">\(= \rho_0\)</span></span></p>
+</div>
+</section>
+<section id="discretization-4" class="slide level2" data-auto-animate="true">
+<h2 data-id="quarto-animate-title">Discretization</h2>
+<ul>
+<li>Governing equations:</li>
+</ul>
+<div data-id="ns">
+<p><span class="math inline">\(\ddot{\vec{x}}_i = \vec{g}+ \langle\nu \nabla^2 \vec{v}_i\rangle- \frac{1}{\langle\rho_i\rangle}\langle\nabla p_i\rangle\)</span></p>
+</div>
+<div data-id="drho-dt">
+<p><span class="math inline">\(\rho_i^*+ \Delta t^2 \langle \nabla^2 p_i \rangle = \rho_0\)</span></p>
+</div>
+</section>
+<section id="what-we-need-to-solve" class="slide level2" data-auto-animate="true">
 <h2 data-id="quarto-animate-title">What we need to solve</h2>
 <ul>
 <li>Newtons Equations of Motion (split and discretized)<sup>1</sup></li>
@@ -238,7 +378,7 @@ $\vec{a}^{ext}_i = \vec{g} + \vec{a}^{vis}_i(t)$ -->
 </ul>
 <p>Find <span class="math inline">\(p_i\)</span> such that <span class="math inline">\(\vec{a}^{p}_i = -\frac{1}{\rho_i}\nabla p_i\)</span> leads to <span class="math inline">\(\rho_i(t+\Delta t) = \rho_0\)</span></p>
 <aside><ol class="aside-footnotes"><li id="fn2"><p>SPH Tutorial, Koshier et al.&nbsp;2019</p></li><li id="fn3"><p>PMPG: Alhussein &amp; Daqaq 2024</p></li></ol></aside></section>
-<section id="particle-deficiency" class="slide level2 center" data-auto-animate="true">
+<section id="particle-deficiency" class="slide level2" data-auto-animate="true">
 <h2 data-id="quarto-animate-title">Particle Deficiency</h2>
 <p>Find <span class="math inline">\(p_i\)</span> such that <span class="math inline">\(\vec{a}^{p}_i = -\frac{1}{\rho_i}\nabla p_i\)</span> leads to <span class="math inline">\(\rho_i(t+\Delta t) = \rho_0\)</span></p>
 <p><a href="res/particle-deficiency-light.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img data-src="res/particle-deficiency-light.png" height="400"></a></p>
@@ -247,7 +387,7 @@ $\vec{a}^{ext}_i = \vec{g} + \vec{a}^{vis}_i(t)$ -->
 <li><p>Incompressibility constraint <span class="math inline">\(\rho_i(t+\Delta t) \leq \rho_0\)</span></p></li>
 </ul>
 </section>
-<section id="linearizing-the-constraint" class="slide level2 center" data-auto-animate="true">
+<section id="linearizing-the-constraint" class="slide level2" data-auto-animate="true">
 <h2 data-id="quarto-animate-title">Linearizing the constraint</h2>
 <ul>
 <li>Incompressibility constraint <span class="math inline">\(\rho_i(t+\Delta t) \leq \rho_0\)</span></li>
@@ -262,7 +402,7 @@ $\vec{a}^{ext}_i = \vec{g} + \vec{a}^{vis}_i(t)$ -->
 </ul>
 </div>
 </section>
-<section id="formulating-an-optimization-problem" class="slide level2 center" data-auto-animate="true">
+<section id="formulating-an-optimization-problem" class="slide level2" data-auto-animate="true">
 <h2 data-id="quarto-animate-title">Formulating an Optimization Problem</h2>
 <ul>
 <li>Linearized Incompressibility Constraint <span class="math inline">\(\rho_i^*(t) - \rho_0 \leq \epsilon\)</span></li>
@@ -270,7 +410,7 @@ $\vec{a}^{ext}_i = \vec{g} + \vec{a}^{vis}_i(t)$ -->
 <li><span class="math inline">\(\Longrightarrow\)</span> Explosions are feasible</li>
 </ul>
 </section>
-<section id="formulating-an-optimization-problem-1" class="slide level2 center" data-auto-animate="true">
+<section id="formulating-an-optimization-problem-1" class="slide level2" data-auto-animate="true">
 <h2 data-id="quarto-animate-title">Formulating an Optimization Problem</h2>
 <ul>
 <li>Idea: Minimize Action</li>
@@ -280,7 +420,7 @@ $\vec{a}^{ext}_i = \vec{g} + \vec{a}^{vis}_i(t)$ -->
 <li>Gauss’ principle: minimize Action subject to constraints.<sup>1</sup></li>
 </ul>
 <aside><ol class="aside-footnotes"><li id="fn4"><p>PMPG: Alhussein &amp; Daqaq 2024</p></li></ol></aside></section>
-<section id="formulating-an-optimization-problem-2" class="slide level2 center" data-auto-animate="true">
+<section id="formulating-an-optimization-problem-2" class="slide level2" data-auto-animate="true">
 <h2 data-id="quarto-animate-title">Formulating an Optimization Problem</h2>
 <div style="margin: 50px;
   border: white 1px solid;
@@ -303,7 +443,7 @@ $\vec{a}^{ext}_i = \vec{g} + \vec{a}^{vis}_i(t)$ -->
 </ul></li>
 </ul>
 </section>
-<section id="results" class="slide level2 center" data-auto-animate="true">
+<section id="results" class="slide level2" data-auto-animate="true">
 <h2 data-id="quarto-animate-title">Results</h2>
 <ul>
 <li>The fluid solver was implemented in Python using CasADi</li>
@@ -345,7 +485,7 @@ $\vec{a}^{ext}_i = \vec{g} + \vec{a}^{vis}_i(t)$ -->
 'previewLinksAuto': false,
 'pdfSeparateFragments': false,
 'autoAnimateEasing': "ease",
-'autoAnimateDuration': 1,
+'autoAnimateDuration': 0.5,
 'autoAnimateUnmatched': true,
 'jumpToSlide': true,
 'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleChalkboard(event)\"><kbd>b</kbd> Toggle Chalkboard</a></li>\n<li class=\"slide-tool-item\" data-item=\"6\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleNotesCanvas(event)\"><kbd>c</kbd> Toggle Notes Canvas</a></li>\n<li class=\"slide-tool-item\" data-item=\"7\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.downloadDrawings(event)\"><kbd>d</kbd> Download Drawings</a></li>\n<li class=\"slide-tool-item\" data-item=\"8\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
@@ -399,7 +539,7 @@ $\vec{a}^{ext}_i = \vec{g} + \vec{a}^{vis}_i(t)$ -->
         disableLayout: false,
 
         // Vertical centering of slides
-        center: true,
+        center: false,
 
         // Enables touch navigation on devices with touch input
         touch: true,
