@@ -14,21 +14,26 @@ h : float = 0.1         # kernel smoothing length
 ρ_0 : float = 1e3       # rest density
 k_eos : float = 750.    # stiffness constant for equation of state
 nu : float = 0.001      # viscosity 
-dt : float = 2e-3       # time step size
+dt : float = 1e-2       # time step size
+ε_thresh:float=1e-3*ρ_0 # error threshold of density invariance (0.1% rest density)
 
 # SETTINGS
 FPS : float = 165       # target GUI FPS
-box_x : float = 0.3     # domain extent in x-direction
-box_y : float = 5   # domain extent in y-direction
+box_x : float = 4     # domain extent in x-direction
+box_y : float = 4       # domain extent in y-direction
+USE_PCISPH : bool = True
+RUN_GUI : bool = False
+FILENAME = "pcisphdynv2.save" if USE_PCISPH else "optidynv2.save"
 
 # CONSTANTS
-r_nb : float = 3*h      # neighbourhood search radius
+r_nb : float = 2*h      # neighbourhood search radius
 g : float = -9.81       # gravitational acceleration (y-direction)
 r_c : float = 2.0*h     # kernel funciton cutoff radius
 m : float = ρ_0*(h**2)  # particle rest mass
 EPS : float = 1e-6      # epsilon to avoid division by zero
 W_corr:float = 1        # correction factor to ensure normalization 
-                        #of kernel, i.e.: ∫∫ W(x) dx = 1
+                        # of kernel, i.e.: ∫∫ W(x) dx = 1 (this is automatically set later)
+T : float = 5.0         # total time simulated
 
 
 # UTILITY FUNCTIONS
@@ -92,7 +97,7 @@ def dW_ca(dx, dy):
 # p = δ * Δρ
 xs,ys = np.meshgrid(np.linspace(-2*h, 2*h, 5), np.linspace(-2*h, 2*h, 5))
 xs_perfect = np.stack([xs.ravel(), ys.ravel()], axis=1)
-β = dt**2 * m**2 * 2/ρ_0
+β = dt**2 * m**2 * 2/(ρ_0**2)
 squared_grad_sum = (ΣdW := np.sum([dW(xs_perfect[j]) for j in range(len(xs_perfect))], axis=0)).dot(ΣdW)
 grad_squared_sum = sum([(grad:= dW(xs_perfect[j])).dot(grad) for j in range(len(xs_perfect))])
 δ_pcisph = -1/(β * (-squared_grad_sum -grad_squared_sum))
@@ -106,7 +111,7 @@ W_corr = ρ_0/ρ_measured
 
 
 # INITIALIZE FIELD QUANTITIES
-x = box(0, box_x+h, 0, box_y,h)                     # positions x
+x = box(0, box_x/2+h, 0, box_y/2,h)                     # positions x
 x += np.random.normal(scale=1e-5, size=x.shape)     # add miniscule jitter to x_0
 b = np.vstack([                                     # boundary particles
     box(-3*h,       -h,        0,       box_y+1,   h),   # - left
@@ -116,10 +121,13 @@ b = np.vstack([                                     # boundary particles
 tree_b = cKDTree(b)     # KDTree for boundary particles is static
 N = x.shape[0]          # total number of particles
 v = np.zeros_like(x)    # velocities
+v_star = np.zeros_like(x) # intermediate velocities for PCISPH
 a = np.zeros_like(x)    # accelerations
 rho = np.zeros(N)       # densities
 p = np.zeros(N)         # pressures
+p_acc = np.zeros(N)     # accumulated PCISPH pressures
 
+print(f"Running with {N} particles")
 
 # ERROR MEASURES
 def predicted_compr_error(p,x,v,rho,nbrs,nbrs_b):
@@ -291,16 +299,17 @@ def update_neighbour_sets(x):
 
 
 # GUI SETUP
-canvas = scene.SceneCanvas(title="OPTI-SPH", keys='interactive', show=True, bgcolor='white', size=(300, 300*(box_y+1)/box_x))
-view = canvas.central_widget.add_view()
-scatter_x = visuals.Markers() # type: ignore
-scatter_x.set_data(x, face_color='red', size=5)
-view.add(scatter_x)
-scatter_bdy = visuals.Markers() # type: ignore
-scatter_bdy.set_data(b, face_color='blue', size=5)
-view.add(scatter_bdy)
-view.camera = 'panzoom'
-view.camera.set_range(x=(-1, box_x+1), y=(-1, box_y+2)) # type: ignore
+if RUN_GUI:
+    canvas = scene.SceneCanvas(title="OPTI-SPH", keys='interactive', show=True, bgcolor='white', size=(300, 300*(box_y+1)/box_x))
+    view = canvas.central_widget.add_view()
+    scatter_x = visuals.Markers() # type: ignore
+    scatter_x.set_data(x, face_color='red', size=5)
+    view.add(scatter_x)
+    scatter_bdy = visuals.Markers() # type: ignore
+    scatter_bdy.set_data(b, face_color='blue', size=5)
+    view.add(scatter_bdy)
+    view.camera = 'panzoom'
+    view.camera.set_range(x=(-1, box_x+1), y=(-1, box_y+2)) # type: ignore
 
 
 # BUFFERS FOR RESULTS AND WARMSTART
@@ -345,7 +354,7 @@ def pressure_solve_opti(x, v, rho, nbrs, nbrs_b, p, two_stage=False):
         ε_star = sol1.value(ε)
         p = sol1.value(p_ca)
     else:
-        ε_star = 1e-2
+        ε_star = ε_thresh
     print("min feasible error:", ε_star)
 
     # # optimization problem formulation
@@ -387,9 +396,8 @@ def pressure_solve_opti(x, v, rho, nbrs, nbrs_b, p, two_stage=False):
 
 t = 0
 # MAIN FUNCTION
-# def main(event=None):
-#     global x,v,a,rho,p,history,lam_g,t
-for t in range(100):
+def main(event=None):
+    global x,v,a,rho,p,history,lam_g,t
     # NEIGHBOUR SEARCH
     nbrs, nbrs_b = update_neighbour_sets(x)
 
@@ -412,30 +420,57 @@ for t in range(100):
     # INTEGRATE A -> V
     v += dt*a
     
-    # PRESSURE SOLVE
-    if lam_g is None:
-        # without warm-start values to use, use equation of state as initial guess
-        p = np.fromiter(( δ_pcisph * max(0, rho[i]-ρ_0) for i in range(N)), float)
+    if not USE_PCISPH:
+        # PRESSURE SOLVE USING CASADI
+        if lam_g is None:
+            # without warm-start values to use, use equation of state as initial guess
+            p = np.fromiter(( δ_pcisph * max(0, rho[i]-ρ_0) for i in range(N)), float)
 
-    p, err_vals = pressure_solve_opti(x,v,rho,nbrs,nbrs_b,p)
-    print("avg pressure", np.average(p))
+        p, err_vals = pressure_solve_opti(x,v,rho,nbrs,nbrs_b,p)
+        print("avg pressure", np.average(p))
+    else:
+        # COMPUTE PRESSURE GUESS from equation of state (ideal gas, δ_pcisph)
+        v_star = np.copy(v)
+        update_rho_star = lambda: np.fromiter(( 
+            rho[i] + 
+            sum([
+                dt * m * (dW(x[i]-x[j])).dot(v_star[i]-v_star[j])
+                for j in nbrs[i]
+            ]) + sum([
+                dt * m * (dW(x[i]-b[k])).dot(v_star[i])
+                for k in nbrs_b[i]
+            ])
+            for i in range(N)), float)
+        rho_star = update_rho_star()
+        p_acc = np.zeros_like(p)
 
-    # # COMPUTE PRESSURE GUESS from equation of state (ideal gas, δ_pcisph)
-    # rho_star = np.fromiter(( 
-    #     rho[i] + 
-    #     sum([
-    #         dt * m * (dW(x[i]-x[j])).dot(v[i]-v[j])
-    #         for j in nbrs[i]
-    #     ]) + sum([
-    #         dt * m * (dW(x[i]-b[k])).dot(v[i])
-    #         for k in nbrs_b[i]
-    #     ])
-    #     for i in range(N)), float)
-    # p = np.fromiter(( δ_pcisph * max(0, rho_star[i]-ρ_0) for i in range(N)), float)
-    
-    # COMPUTE PRESSURE ACCELERATIONS
+        while True:
+            err_vals = (rho_star - ρ_0)
+            if np.max(err_vals) <= ε_thresh:
+                break;
+            # compute predicted density given current predicted velocities
+            rho_star = update_rho_star()
+            
+            # compute pressures using PCISPH state equation
+            p = np.fromiter(( δ_pcisph * max(0, rho_star[i]-ρ_0) for i in range(N)), float)
+            # accumulate total pressure values for each particle
+            p_acc += p
+            
+            # compute pressure accelerations and integrate to update predicted velocities
+            for i in range(N):
+                a[i] = sum([
+                    -m * (p[i]/(rho[i]**2) + p[j]/(rho[j]**2)) * dW(x[i]-x[j])
+                    for j in nbrs[i]
+                ]) + sum([
+                    -m * (p[i]/(rho[i]**2)) * dW(x[i]-b[k])
+                    for k in nbrs_b[i]
+                ])
+            v_star += dt*a
+        # finally, use the accumulated pressure values as output
+        p = p_acc
+
+    # APPLY PRESSURE FORCES
     for i in range(N):
-        # a = -Σ_j m_j (p_i/ρ_i² + p_j/ρ_j²) ∇W_ij  -Σ_k m_k (p_i/ρ_i²) ∇W_ik
         a[i] = sum([
             -m * (p[i]/(rho[i]**2) + p[j]/(rho[j]**2)) * dW(x[i]-x[j])
             for j in nbrs[i]
@@ -471,14 +506,20 @@ for t in range(100):
     history["ay"] += [[a_i[1] for a_i in a]]
 
     # update gui 
-    scatter_x.set_data(x, face_color='red', size=5)
+    if RUN_GUI:
+        scatter_x.set_data(x, face_color='red', size=5)
 
-with open("conventional.save", "w") as f:
-    f.write(json.dumps(history))
 
-# # RUN GUI
-# timer = app.Timer()
-# timer.connect(main)
-# timer.start(1./FPS)
-# if __name__ == '__main__':
-#     canvas.app.run()
+if RUN_GUI:
+    # RUN GUI
+    timer = app.Timer()
+    timer.connect(main)
+    timer.start(1./FPS)
+    if __name__ == '__main__':
+        canvas.app.run() # type: ignore
+else:
+    while t*dt <= T:
+        print(f"STEP: t={t}/{int(T/dt)}")
+        main()
+    with open(FILENAME, "w") as f:
+        f.write(json.dumps(history))

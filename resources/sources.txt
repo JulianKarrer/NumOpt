@@ -1,0 +1,5 @@
+Lecture Notes:
+https://www.syscop.de/teaching/ss2025/numerical-optimization
+
+Convex Optimization:
+https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf

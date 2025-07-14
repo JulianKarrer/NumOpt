@@ -8,20 +8,25 @@ import json
 ti.init(arch=ti.gpu, debug=True)
 
 # SETTINGS
-RES : int = 300     # pixels per unit length
+RES : int = 200     # pixels per unit length
 H : float = 0.1     # particle spacing
-AROUND : int = 100
+DISPLAY_RAD = H     # display black if there is no contribution in this radius
+AROUND : int = 50   # border size in pixels
+BW : float = H/5    # boundary width displayed
 
 # LOAD FILE
-# with open("minAction_approx.save") as f:
-with open("conventional.save") as f:
+FILENAME = "pcisphdynv2"
+# with open("pcisphv2.save") as f:
+with open(FILENAME+".save") as f:
     data = json.load(f)
+box_x = data["box_x"]
+box_y = data["box_y"]
 
 # COMPUTE CONSTANTS
 STEPS : int = len(data["xs"])
 N : int = len(data["xs"][0])
-NX : int = int(0.3*RES) + 2*AROUND
-NY : int = int(5.0*RES) + 2*AROUND
+NX : int = int(box_x*RES) + 2*AROUND
+NY : int = int(box_y*RES) + 2*AROUND
 MAX_P = max([max(data["ps"][i]) for i in range(STEPS)])
 MAX_rho = max([max(data["rhos"][i]) for i in range(STEPS)])
 print(NX,NY,MAX_P)
@@ -108,27 +113,43 @@ def display(f:ti.template(), maxi: ti.template()):
         y_coord = (yi-AROUND)/RES
 
         mag = 0.
+        neighbour_present = 0.
         for i in range(N):
             dx = x[i].x-x_coord
             dy = x[i].y-y_coord
             # compute SPH-interpolation of the pressure at x,y
             # here: assume rest density
-            mag += (H**2) * f[i] * W(tm.sqrt(dx*dx + dy*dy))
+            q = tm.sqrt(dx*dx + dy*dy)
+            mag += (H**2) * f[i] * W(q)
             # otherwise:
             # magnitude += (M/rho[i]) * p[i] * W(tm.sqrt(dx*dx+dy+dy))
+            if q<DISPLAY_RAD:
+                neighbour_present=1.
         # normalize to [0;1] for colour mapping
         mag /= maxi
 
         # map the result to a colour
         c = colour_map(mag)
+
+        # draw the boundary
+        wall = 0.
+        if (ti.abs(x_coord - (box_x+H))<BW/2 or ti.abs(x_coord - (-H))<BW/2) and (y_coord > -H):
+            wall = 1.
+        elif (y_coord > -H-BW) and (y_coord < -H) and (x_coord<(box_x+H+BW/2)) and (x_coord>(-H-BW/2)):
+            wall = 1.
+        
         pixels[xi,yi] = tm.mix(
-            ti.Vector([0,0,0,1]), 
-            ti.Vector([c.x,c.y,c.z,mag]),
-            mag**0.2
+            tm.mix(
+                ti.Vector([0,0,0,1]), 
+                ti.Vector([c.x,c.y,c.z,mag]),
+                neighbour_present
+            ),
+            ti.Vector([1,1,1,1]), 
+            wall/2
         )
 
 # MAIN LOOP
-gui = ti.GUI("Optimal SPH", res=(NX, NY), fast_gui = True)
+gui = ti.GUI("Optimal SPH", res=(NX, NY))
 for i in range(STEPS):
     max_p[None] = max(data["ps"][i])
     p_np = np.array(data["ps"][i]).reshape(N)
@@ -136,7 +157,8 @@ for i in range(STEPS):
     p.from_numpy(p_np)
     rho.from_numpy(np.array(data["rhos"][i]))
     # display(rho, MAX_rho*4)
-    display(p, MAX_P/2)
+    display(rho, MAX_rho*2)
     gui.set_image(pixels)
-    gui.show()
+    filename = f'{FILENAME}_{i:05d}.png'
+    gui.show(filename)
 

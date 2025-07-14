@@ -1,0 +1,488 @@
+---
+# title: "Optimal SPH Pressure fields"
+# author: "Julian Karrer"
+lightbox: true
+format:
+  revealjs: 
+    theme: [dark, custom.scss]
+    transition: fade
+    background-transition: fade
+    auto-animate-duration: 0.5
+    chalkboard: true
+    # center: true
+  html:
+    include-in-header:
+      - pyscript-header.html
+fontsize: 24pt
+---
+
+# {background-video="res/coast-cut.mp4" background-video-loop="true" background-video-muted="true" auto-animate=true}
+
+<div style="background: #0009;padding: 20px;border-radius: 30px; display:flex; justify-content: center; flex-direction:column;
+  align-items: center;">
+<h1>Optimal Pressure fields in SPH</h1>
+<span>Julian Karrer</span>
+</div>
+
+<script src="./plotly.js"> </script>
+<style>
+  /* :root{--r-link-color:white !important;} */
+  .aside-footnotes{opacity:0.5; font-size:14pt;}  
+  .boxed{margin: 50px;
+  border: white 1px solid;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;}
+
+  .glowing{filter: drop-shadow(0px 0px 10px #23cafa);}
+  .fragment.glow{filter: drop-shadow(0px 0px 10px #23cbfa00); transition: all 500ms ease;}
+  .fragment.glow.visible{filter: drop-shadow(0px 0px 10px #23cafa); transition: all 500ms ease;}
+  .fragment.glow > span.comment {opacity:0;}
+  .fragment.glow.visible > span.comment {opacity:1;}
+  .comment{
+    position: absolute;
+    bottom: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .spacer{margin-top:50px;}
+  .plot-div{
+    width:900px; height:500px; position:relative;
+  }
+</style>
+
+
+## Lagrangian Hydrodynamics {auto-animate=true}
+
+- System State: $\vec{X} = [\vec{x}_1,\dots,\vec{x}_N]$ and $\vec{V} = [\vec{v}_1,\dots,\vec{v}_N]$ at current time $t$
+- Given: $\Delta t, \rho_0, \nu, \vec{g}, m$
+- Governing equations:
+
+<div data-id="ns">
+$\ddot{\vec{x}}_i = \vec{g}+\underbrace{\nu \nabla^2 \vec{v}_i}_{\text{Viscosity}}\underbrace{- \frac{1}{\rho_i}\nabla p_i}_{\text{Pressure}}$
+<span data-id="dencon" style="margin-left:50px;">subject to: $\quad\rho_i(\vec{X}) + \Delta t \frac{D\rho_i(\vec{X})}{Dt}(\vec{V},\vec{P})  = \rho_0$</span> 
+</div>
+
+<div style="margin-top:20px"></div>
+
+- Decision variables: $\vec{P} = [p_1,\dots, p_N]$
+
+- State Update: (Numerical Time Integration)
+
+$\vec{v}_i(t+\Delta t) = \vec{v}_i +$ <span class="glowing"> $\ddot{\vec{x}}_i$ </span> $\cdot \Delta t$
+
+$\vec{x}_i(t+\Delta t) = \vec{x}_i + \vec{v}_i(t+\Delta t) \cdot \Delta t$
+
+
+
+## Discretization {auto-animate=true}
+<!-- continuous -->
+
+- Governing equations:
+
+<div data-id="ns">
+$\ddot{\vec{x}}_i = \vec{g}+\nu \nabla^2 \vec{v}_i- \frac{1}{\rho_i}\nabla p_i$
+</div>
+
+<div data-id="dencon">
+$\rho_i(\vec{X}) + \Delta t \frac{D\rho_i(\vec{X})}{Dt}(\vec{V},\vec{P})  = \rho_0$
+</div>
+
+<div class="spacer"></div>
+How do we compute $\rho_i$ and differential operators? 
+
+
+## Discretization {auto-animate=true}
+<!-- discrete time -->
+
+- Governing equations:
+
+<div data-id="ns">
+$\ddot{\vec{x}}_i = \vec{g}+ \langle\nu \nabla^2 \vec{v}_i\rangle- \frac{1}{\langle\rho_i\rangle}\langle\nabla p_i\rangle$ 
+</div>
+
+<div data-id="dencon">
+$\left\langle\rho_i\right\rangle + \Delta t \left\langle \frac{D\rho_i}{Dt}(\vec{V},\vec{P})\right\rangle = \rho_0$
+</div>
+
+<div class="spacer"></div>
+How do we compute $\rho_i$ and differential operators?
+
+$\rightarrow$ SPH discretization $\langle f_i \rangle(\vec{X})$ $\qquad$(linear in $f_i$, depends on $\vec{X}$)
+
+## Smoothed Particle Hydrodynamics {auto-animate=true}
+
+
+<!-- $\begin{align}A(\vec{x}_i) &= \int_\Omega &A(\vec{x}_j) \delta(\vec{x}_j - \vec{x})  \,dV\\A_i &\approx \sum_{j \in \mathcal{N}_i} \frac{m_j}{\rho_j} &A_j  W(\vec{x}_i - \vec{x}_j, \hbar)\end{align}$ -->
+
+<!-- - $A(\vec{x}_i) = \int_\Omega A(\vec{x}_j) \delta(\vec{x}_j - \vec{x})  dV$ -->
+<div style= "font-size: 14pt;">
+$\begin{align}
+\langle f_i\rangle &= \sum_{j \in \mathcal{N}_i} \frac{m}{\rho_j} \, f_j \, W_{ij}\qquad
+\langle\nabla f_i\rangle = \rho_i \sum_{j \in \mathcal{N}_i} m \, \left( \frac{f_i}{\rho_i^2} + \frac{f_j}{\rho_j^2} \right) \, \nabla W_{ij}\qquad
+\langle \nabla \cdot \vec{f}_i \rangle = -\frac{1}{\rho_i} \sum_{j \in \mathcal{N}_i} m \left(\vec{f}_i - \vec{f}_j\right) \cdot \nabla W_{ij}
+\end{align}$ 
+</div>
+
+<div style= "font-size: 14pt; text-align:center; margin-top:20px;">
+$\left\langle \nabla^2 f_i \right\rangle = \langle \nabla \cdot \langle\nabla f_i\rangle  \rangle$
+</div>
+
+<!-- $\begin{align}A(\vec{x}_i) &\approx \sum_{j \in \mathcal{N}_i} V_j A_j W(\vec{x}_{ij}, \hbar)\\\nabla A(\vec{x}_i) &\approx \sum_{j \in \mathcal{N}_i} V_j A_j \nabla W(\vec{x}_{ij}, \hbar)\end{align}$
+
+- Sum over neighbours $\mathcal{N}_i := \left\{\vec{x} : \, \left|\left|\vec{x}_i-\vec{x}\right|\right|_2 \leq \hbar\,  \right\}$ -->
+- <span style="font-size:16pt;">2D Gaussian Kernel^[SPH Tutorial, Koshier et al. 2019] such as $W_{ij} := W(\vec{x}_i - \vec{x}_j, \hbar) = \frac{16}{\pi\hbar^2}\cdot \max\left(0,1-\frac{\left|\vec{x}_i-\vec{x}_j\right|}{\hbar}\right)^3 - 4\cdot \max\left(0,\frac{1}{2} - \frac{\left|\vec{x}_i-\vec{x}_j\right|}{\hbar}\right)^3$</span>
+
+<div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+<div style="display: flex; justify-content: center; align-items: center; flex-direction: row;">
+<canvas id="smooth_canv" width="500" height="300" style="border:1px solid #444;"></canvas>
+<canvas id="kernel_canv" width="500" height="300" style="border:1px solid #444; margin-left:50px;"></canvas>
+</div>
+<br/>
+<div style="display: flex; font-size:14pt; margin-top:20px;"> $\hbar$ <span style="width:20px"></span><input type="range" id="smoothing_length" min="5" max="300" value="10"></div>
+</div>
+
+```{=html}
+<script>
+  const canvas = document.getElementById('smooth_canv');
+  const ctx = canvas.getContext('2d');
+  const slider = document.getElementById('smoothing_length');
+
+  const particle_img = new Image();
+  particle_img.src = './res/sph-alpha-low.png';
+
+  particles = []
+  particle_img.onload = () => {
+    particles.push([0.5,0.5])
+    draw_particles();
+    draw_kernel();
+  };
+  slider.addEventListener('input', () => {
+    draw_particles();
+    draw_kernel();
+  }); 
+  canvas.addEventListener('click', evt => {
+    // get click pos relative to canvas
+    const rect = canvas.getBoundingClientRect();
+    const x = (evt.clientX - rect.left) / rect.width;
+    const y = (evt.clientY - rect.top ) / rect.height;
+    particles.push([x,y]);
+    draw_particles()
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key.toLowerCase() === ",") {
+      particles=[];
+      draw_particles()
+    }
+  });
+
+  function draw_kernel(){
+    W = (q)=> Math.pow(Math.max(1-q,0), 3) - 4*Math.pow(Math.max(0.5-q,0), 3)
+    const w = canvas.width, h = canvas.height;
+    const ctx = document.getElementById('kernel_canv').getContext('2d');
+    ctx.clearRect(0, 0, w, h);
+    const size = (+slider.value);
+    ctx.strokeStyle = "#ddd";
+    ctx.beginPath();
+    ctx.moveTo(0,4*h/5);
+    for (let x=0; x<w; x+=2){
+      f_x = -W(Math.abs((x-0.5*w)/size))/0.8*h +4*h/5
+      ctx.lineTo(x, f_x);
+    }
+    ctx.stroke();
+  }
+
+  function draw_particles() {
+    const w = canvas.width, h = canvas.height;
+    const size = +slider.value;
+    ctx.clearRect(0, 0, w, h);
+    for (let i=0; i<particles.length; i+=1){
+      const px = particles[i][0] * w;
+      const py = particles[i][1] * h;
+      ctx.drawImage(
+        particle_img,
+        px - size/2,   // top-left x
+        py - size/2,   // top-left y
+        size,          // draw width
+        size           // draw height
+      );
+    }
+  }
+  
+</script>
+```
+
+
+## Discretization {auto-animate=true}
+<!-- discrete time -->
+
+- Governing equations:
+
+<div data-id="ns">
+$\ddot{\vec{x}}_i = \vec{g}+ \langle\nu \nabla^2 \vec{v}_i\rangle- \frac{1}{\langle\rho_i\rangle}\langle\nabla p_i\rangle$ 
+</div>
+
+<div data-id="dencon">$\left\langle\rho_i\right\rangle +$
+<span class="glowing">
+$\Delta t \left\langle \frac{D\rho_i(\vec{X})}{Dt}(\vec{V},\vec{P}) \right\rangle$
+</span>
+$= \rho_0$</div>
+
+<div class="spacer"></div>
+
+
+## Discretization {auto-animate=true}
+
+- Governing equations:
+
+<div data-id="ns">
+$\ddot{\vec{x}}_i = \vec{g}+ \langle\nu \nabla^2 \vec{v}_i\rangle- \frac{1}{\langle\rho_i\rangle}\langle\nabla p_i\rangle$
+</div>
+
+<div data-id="drho-dt">
+<span class="fragment custom glow"> $\langle\rho_i \rangle\underbrace{-\Delta t \langle\rho_i\rangle \left\langle\nabla \cdot \left(\vec{v}_i +\Delta t \vec{g} + \Delta t \langle\nu \nabla^2\vec{v}_i\rangle\right)\right\rangle}_{\Delta \rho_i^{g,\nu}}$<span class="comment">$\tilde{\rho}_i:=$</span></span>$+ \underbrace{\Delta t^2 \langle \nabla^2 p_i \rangle}_{\Delta \rho_i^{p}} = \rho_0$
+</div> 
+
+
+## Discretization {auto-animate=true}
+
+- Governing equations:
+
+<div data-id="ns">
+$\ddot{\vec{x}}_i = \vec{g}+ \langle\nu \nabla^2 \vec{v}_i\rangle- \frac{1}{\langle\rho_i\rangle}\langle\nabla p_i\rangle$
+</div>
+
+
+<div data-id="drho-dt">
+$\tilde{\rho}_i+ \Delta t^2 \langle \nabla^2 p_i \rangle = \rho_0$
+</div> 
+
+- Just a linear system of equations?
+
+## Neighbour Deficiency at Surface {auto-animate=true}
+
+![](res/particle-deficiency-light.png){height=400}
+
+- Positivity constraint $p_i \geq 0$
+- Incompressibility constraint $\tilde{\rho}_i+ \Delta t^2 \langle \nabla^2 p_i \rangle$ <span class="glowing">$\leq$</span> $\rho_0$
+
+
+## Formulating an Optimization Problem {auto-animate=true}
+
+- Positivity constraint $p_i \geq 0$
+- Incompressibility constraint $\tilde{\rho}_i+ \Delta t^2 \langle \nabla^2 p_i \rangle \leq \rho_0$
+- Only defines unbound, feasible $\Omega$ $\Longrightarrow$ e.g. Explosions are feasible
+
+
+
+## Formulating an Optimization Problem {auto-animate=true}
+- Idea: Minimize Action
+
+$\begin{align}S(\vec{P},\vec{X}) &\propto \sum_i \langle\nabla p_i\rangle \cdot \langle\nabla p_i\rangle \\&= \sum_i\left(\rho_i \sum_{j \in \mathcal{N}_i} m_j \, \left( \frac{p_i}{\rho_i^2} + \frac{p_j}{\rho_j^2} \right) \, \nabla W_{ij}\right)^2\end{align}$ 
+
+  - Gauss' principle: minimize Action subject to constraints.^[PMPG: Alhussein & Daqaq 2024]
+
+## Formulating an Optimization Problem {auto-animate=true}
+
+<div style="margin: 50px;
+  border: white 1px solid;
+  display: flex;
+  flex-direction:column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;">
+
+$\begin{align}
+&\min_{p_1,\dots,p_N\in ℝ} &\frac{1}{2}\sum_i \left(\rho_i \sum_{j \in \mathcal{N}_i} m_j \, \left( \frac{p_i}{\rho_i^2} + \frac{p_j}{\rho_j^2} \right) \, \nabla W_{ij}\right)^2
+\end{align}$
+
+$\begin{align}
+&\text{s.t.}&\forall i\in\{1,\dots,N\}: &\quad p_i \geq 0 \\
+&&\forall i\in\{1,\dots,N\}: &\quad \tilde{\rho}_i+ \Delta t^2 \langle \nabla^2 p_i\rangle \leq \rho_0 \\
+\end{align}$
+</div>
+
+- Convex Quadratic Program with a Least Squares objective
+  <!-- - Objective is quadratic in $\vec{P}$
+  - $p_i \geq 0$ is linear in $\vec{P}$
+  - $\tilde{\rho}_i+ \Delta t^2 \langle \nabla^2 p_i\rangle$ is linear in $\vec{P}$ -->
+
+## Results {auto-animate=true}
+- The pressure solver was implemented in Python using IPOPT with CasADi
+
+<script>
+{{< include ./rhos.js >}}
+</script>
+
+<style>
+  .subvid{
+    position: absolute;
+    left: 0;
+    text-align: center;
+    width: 100%;
+    font-size:14pt;
+  }
+  .descr{
+    position: absolute;
+    bottom: -20pt;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.5;
+    font-size: 12pt;
+  }
+</style>
+<script>const plot_width=800; const plot_height=500;</script>
+
+<div style="display:flex; flex-direction:row; align-items:center; justify-content:center;">
+
+<div style="display:flex; flex-direction:column; position:relative;">
+  <video height="500px" width="auto" autoplay muted loop controls>
+    <source src="./res/colopt.mp4" data-src="./res/colopt.mp4" type="video/mp4">
+  </video>
+  <span class="subvid" style="top: 500px;">$\langle\rho\rangle_{\text{QP}}$</span>
+</div>
+
+<div style="margin-left:20px;"></div>
+
+<div style="display:flex; flex-direction:column; position:relative;">
+  <video height="500px" width="auto" autoplay muted loop controls>
+    <source src="./res/colpci.mp4" data-src="./res/colpci.mp4" type="video/mp4">
+  </video>
+  <span class="subvid" style="top: 500px;">$\langle\rho\rangle_{\text{PCISPH}}$</span>
+</div>
+
+<div id="rhos" style="margin-left:50px;"></div>
+</div>
+
+<span class="descr">$\Delta t=10^{-2}\text{s}, \nu=10^{-4}\text{Pa}\cdot\text{s}, \hbar=0.2\text{m}, \epsilon_{tol}=10^{-3}\rho_0, \rho_0=1000\frac{\text{kg}}{\text{m}^3}, 0.3\text{m} \times 5\text{m} \text{ Domain}$</span>
+
+<script>
+  // const steps = decays[0]["ts"].length;
+  const col  = (i)=>'hsv('+((i)/decays.length*270+180)%360+', 100, 80)'
+  const col_o = "#f5a142";
+  const col_c = "#4296f5";
+  const col_o_weak = "#f5bc7a";
+  const col_c_weak = "#7ab3f5";
+
+  const data = [
+    {
+      x: rhos["ts"],
+      y: rhos["pmaxc"],
+      mode: 'lines',
+      type: 'scatter',
+      name: "Maximum (PCISPH)",
+      showlegend: true,
+      line: {
+        dash: "solid",
+        color: col_c,
+      },
+    },
+    {
+      x: rhos["ts"],
+      y: rhos["pavgc"],
+      mode: 'lines',
+      type: 'scatter',
+      name: "Average (PCISPH)",
+      showlegend: true,
+      line: {
+        color: col_c_weak,
+      },
+      visible:"legendonly",
+    },
+     {
+      x: rhos["ts"],
+      y: rhos["pmaxo"],
+      mode: 'lines',
+      type: 'scatter',
+      name: "Maximum (QP)",
+      showlegend: true,
+      line: {
+        dash: "solid",
+        color: col_o,
+      },
+    }, 
+    {
+      x: rhos["ts"],
+      y: rhos["pavgo"],
+      mode: 'lines',
+      type: 'scatter',
+      name: "Average (QP)",
+      showlegend: true,
+      line: {
+        color: col_o_weak,
+      },
+      visible:"legendonly",
+    },
+  ]
+  
+  const layout = {
+      template: 'plotly_dark',
+      width: plot_width,
+      height: plot_height,
+      font: { size: 18, color: 'white', family: 'Degular', },
+      plot_bgcolor: '#191919',
+      paper_bgcolor: '#191919',
+      margin: { l: 100, b: 50 },
+      title: {text: 'Pressure Evolution over Time'},
+      xaxis: {
+          titlefont: { color: 'white' },
+          tickfont: { color: 'white' },
+          showgrid: true,
+          gridcolor: '#666',
+          gridwidth: 0.5,
+          title: {
+            text: 'Time [s]',
+          },
+      },
+      yaxis: {
+          titlefont: { color: 'white' },
+          tickfont: { color: 'white' },
+          tickmode: 'array',
+          title: {
+            text: 'Pressure [Pa]',
+          },
+          // type: 'log',
+      },
+      barmode: 'group',
+      showlegend:true,
+      legend: {
+       x: 1,
+       xanchor: 'right',
+       y: 1
+      },
+  };
+
+  Plotly.newPlot('rhos', data, layout, {
+      displayModeBar: false
+  });
+</script>
+
+
+## Thank you for your attention! {auto-animate=true}
+
+
+<div style="display:flex; flex-direction:row; align-items:center; justify-content:center;">
+
+<div style="display:flex; flex-direction:column; position:relative;">
+  <video height="600px" width="auto" autoplay muted loop controls>
+    <source src="./res/dynopt.mp4" data-src="./res/dynopt.mp4" type="video/mp4">
+  </video>
+  <span class="subvid" style="top: 580px;">QP</span>
+</div>
+
+<div style="margin-left:10px;"></div>
+
+<div style="display:flex; flex-direction:column; position:relative;">
+  <video height="600px" width="auto" autoplay muted loop controls>
+    <source src="./res/dynpci.mp4" data-src="./res/dynpci.mp4" type="video/mp4">
+  </video>
+  <span class="subvid" style="top: 580px;">PCISPH</span>
+</div>
+
+<div id="rhos" style="margin-left:50px;"></div>
+</div>
+
+
+
+<!-- - $\begin{align}\nabla p_i \approx \rho_i \sum_{j \in \mathcal{N}_i} m_j \, \left( \frac{p_i}{\rho_i^2} + \frac{p_j}{\rho_j^2} \right) \, \nabla W_{ij}\end{align}$^[SPH Tutorial, Koshier et al. 2019] -->
