@@ -177,7 +177,7 @@ Optimal Pressure fields in SPH
 <li>Governing equations:</li>
 </ul>
 <div data-id="ns">
-<p><span class="math inline">\(\ddot{\vec{x}}_i = \vec{g}+\underbrace{\nu \nabla^2 \vec{v}_i}_{\text{Viscosity}}\underbrace{- \frac{1}{\rho_i}\nabla p_i}_{\text{Pressure}}\)</span> <span data-id="dencon" style="margin-left:50px;">subject to: <span class="math inline">\(\quad\rho_i(\vec{X}) + \Delta t \frac{D\rho_i(\vec{X})}{Dt}(\vec{V},\vec{P})  = \rho_0\)</span></span></p>
+<p><span class="math inline">\(\ddot{\vec{x}}_i = \vec{g}+\underbrace{\nu \nabla^2 \vec{v}_i}_{\text{Viscosity}}\underbrace{- \frac{1}{\rho_i(\vec{X})}\nabla p_i}_{\text{Pressure}}\)</span> <span data-id="dencon" style="margin-left:20px;">subject to: <span class="math inline">\(\quad\rho_i(\vec{X}) + \Delta t \frac{D\rho_i(\vec{X})}{Dt}(\vec{V},\vec{P})  = \rho_0\)</span></span></p>
 </div>
 <div style="margin-top:20px">
 
@@ -196,7 +196,7 @@ Optimal Pressure fields in SPH
 <li>Governing equations:</li>
 </ul>
 <div data-id="ns">
-<p><span class="math inline">\(\ddot{\vec{x}}_i = \vec{g}+\nu \nabla^2 \vec{v}_i- \frac{1}{\rho_i}\nabla p_i\)</span></p>
+<p><span class="math inline">\(\ddot{\vec{x}}_i = \vec{g}+\nu \nabla^2 \vec{v}_i- \frac{1}{\rho_i(\vec{X})}\nabla p_i\)</span></p>
 </div>
 <div data-id="dencon">
 <p><span class="math inline">\(\rho_i(\vec{X}) + \Delta t \frac{D\rho_i(\vec{X})}{Dt}(\vec{V},\vec{P})  = \rho_0\)</span></p>

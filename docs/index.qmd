@@ -60,8 +60,8 @@ fontsize: 24pt
 - Governing equations:
 
 <div data-id="ns">
-$\ddot{\vec{x}}_i = \vec{g}+\underbrace{\nu \nabla^2 \vec{v}_i}_{\text{Viscosity}}\underbrace{- \frac{1}{\rho_i}\nabla p_i}_{\text{Pressure}}$
-<span data-id="dencon" style="margin-left:50px;">subject to: $\quad\rho_i(\vec{X}) + \Delta t \frac{D\rho_i(\vec{X})}{Dt}(\vec{V},\vec{P})  = \rho_0$</span> 
+$\ddot{\vec{x}}_i = \vec{g}+\underbrace{\nu \nabla^2 \vec{v}_i}_{\text{Viscosity}}\underbrace{- \frac{1}{\rho_i(\vec{X})}\nabla p_i}_{\text{Pressure}}$
+<span data-id="dencon" style="margin-left:20px;">subject to: $\quad\rho_i(\vec{X}) + \Delta t \frac{D\rho_i(\vec{X})}{Dt}(\vec{V},\vec{P})  = \rho_0$</span> 
 </div>
 
 <div style="margin-top:20px"></div>
@@ -82,7 +82,7 @@ $\vec{x}_i(t+\Delta t) = \vec{x}_i + \vec{v}_i(t+\Delta t) \cdot \Delta t$
 - Governing equations:
 
 <div data-id="ns">
-$\ddot{\vec{x}}_i = \vec{g}+\nu \nabla^2 \vec{v}_i- \frac{1}{\rho_i}\nabla p_i$
+$\ddot{\vec{x}}_i = \vec{g}+\nu \nabla^2 \vec{v}_i- \frac{1}{\rho_i(\vec{X})}\nabla p_i$
 </div>
 
 <div data-id="dencon">
