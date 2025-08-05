@@ -1,5 +1,17 @@
 
 
+# This single, self-contained script is the basis of the report, implementing
+# both a PCISPH-based pressure solver and the QP solution outlined in the report,
+# implemented with IPOPT in Casadi using the Opti stack.
+# It contains some objective- and constraint-functions that were experimented with
+# but not used in the final report, as indicated by the comments. 
+# The main function is at the bottom.
+
+# This requires numpy, vispy, scipy and casadi to run and yields either
+# an interactive GUI or a "... .save" output file depending on the 
+# settings at the top of the file.
+
+
 # IMPORTS
 import numpy as np
 from vispy import scene, app # type: ignore
@@ -19,10 +31,10 @@ dt : float = 1e-2       # time step size
 
 # SETTINGS
 FPS : float = 165       # target GUI FPS
-box_x : float = 4     # domain extent in x-direction
+box_x : float = 4       # domain extent in x-direction
 box_y : float = 4       # domain extent in y-direction
-USE_PCISPH : bool = True
-RUN_GUI : bool = False
+USE_PCISPH : bool = True # whether to use PCISPH or the QP solver
+RUN_GUI : bool = True    # either show an interactive gui or write results to file
 FILENAME = "pcisphdynv2.save" if USE_PCISPH else "optidynv2.save"
 
 # CONSTANTS
@@ -129,7 +141,7 @@ p_acc = np.zeros(N)     # accumulated PCISPH pressures
 
 print(f"Running with {N} particles")
 
-# ERROR MEASURES
+# ERROR MEASURES / CONSTRAINTS
 def predicted_compr_error(p,x,v,rho,nbrs,nbrs_b):
     """Computes the per-particle predicted density error given a set of pressures,
     and predicted densities. Returned positive values correspond to compressions."""
@@ -166,6 +178,8 @@ def predicted_compr_error(p,x,v,rho,nbrs,nbrs_b):
         err_pred += [rho_i - ρ_0]
     return ca.vertcat(*err_pred) 
 
+# the following constraint is more exact, but non-linear in p! 
+# it was experimented with but not used in the report
 def predicted_compr_error_exact(p,x,v,rho,nbrs,nbrs_b):
     """Computes the per-particle predicted density error given a set of pressures,
     and predicted densities. Returned positive values correspond to compressions."""
@@ -201,7 +215,9 @@ def predicted_compr_error_exact(p,x,v,rho,nbrs,nbrs_b):
     return ca.vertcat(*err_pred) 
 
 
-# QUALITY MEASURES
+# QUALITY MEASURES / OBJECTIVE FUNCTIONS
+
+# not used in the report:
 def int_nabla_p_squared(p, x, nbrs, nbrs_b):
     """Compute the integral of the squared norm of pressure gradients.
 
@@ -227,7 +243,7 @@ def int_nabla_p_squared(p, x, nbrs, nbrs_b):
         res += (nabla_p_x*nabla_p_x + nabla_p_y * nabla_p_y)
     return res
 
-
+# THIS is the objective function actually used in the report
 def compute_action(p, x, nbrs, nbrs_b):
     """Compute half the sum of the squared norms of pressure gradients:
     - 1/2  Σ_i  |∇p|² where ∇p is the SPH discretization of the pressure gradient.
@@ -257,6 +273,7 @@ def compute_action(p, x, nbrs, nbrs_b):
         res += 0.5 *(nabla_p_x*nabla_p_x + nabla_p_y * nabla_p_y)
     return res 
 
+# not used in the report:
 def dirichlet_energy(p, x, err, nbrs, nbrs_b, compression_only=False):
     """Compute the Dirichlet energy of the pressure field.
     The Dirichlet energy in this case reads: 
@@ -279,7 +296,7 @@ def dirichlet_energy(p, x, err, nbrs, nbrs_b, compression_only=False):
             nabla_p_x += rho[i] * m * (p[i]/(rho[i]**2)) * dwx
             nabla_p_y += rho[i] * m * (p[i]/(rho[i]**2)) * dwy
         if compression_only:
-            # only penzlizing compressive errors makes this objective non-smooth due to the use of fmax
+            # only penzlizing the compressive errors makes this objective non-smooth due to the use of fmax
             # this results in diverging iterates for inexact err and nonsense results for exact err
             res += 0.5*(nabla_p_x*nabla_p_x + nabla_p_y * nabla_p_y) - p[i]*(ca.fmax(err[i], 0.)/dt**2)
         else:
@@ -340,11 +357,14 @@ def pressure_solve_opti(x, v, rho, nbrs, nbrs_b, p, two_stage=False):
 
     # err represents the per-particle predicted density error
     # where positive values correspond to compressions.
+
+    # in the report, the predicted or linearized incompressibility constraint was used:
     err = predicted_compr_error(p_ca, x, v, rho, nbrs, nbrs_b)
     # err = predicted_compr_error_exact(p_ca, x, v, rho, nbrs, nbrs_b)
 
     if two_stage:
         # find smallest feasible error threshold
+        # not used in the report, since ε=0 was found in practice
         opti.minimize(ε)
         opti.subject_to( err <= ε )
         opti.subject_to( ε >= 0 )
@@ -483,7 +503,9 @@ def main(event=None):
     v += dt*a
     x += dt*v 
 
-    # ENFORCE BOUNDARY CONDITIONS
+    # ENFORCE OUTER BOUNDARY CONDITIONS
+    # this is only relevant when a particle escapes the boundary particles 
+    # and was not necessary in practice
     for i in range(N):
         gamma = 0               # stop the particle
         border = 5                # how far outside before these conditions apply

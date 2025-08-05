@@ -5,6 +5,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 
+# In this file, the GPU-parallelization framework Taichi is used to quickly
+# generate images and videos of SPH-reconstructed fields given the simulated
+# particle data. 
+# It was used to create figures in the report but is otherwise irrelevant.
+
 ti.init(arch=ti.gpu, debug=True)
 
 # SETTINGS

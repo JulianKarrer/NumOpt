@@ -4,13 +4,19 @@ from matplotlib.animation import FuncAnimation
 from scipy.spatial import cKDTree
 import numpy as np
 
-
+# This file serves to analyse the data output by `sph.py` and produce 
+# Matplotlib graphs as well as output values for the presentation 
+# (which uses Plotly.JS) and the report (which uses Latex PGFPLOTS)
+# of density and pressure evolution over time (both maximum and average)
+# for both solvers.
 
 
 # load all data for conventional and optimal solver
-with open("pcisphv2.save") as f:
+# with open("pcisphv2.save") as f:
+with open("pcisphdynv2.save") as f:
     data_c = json.load(f)
-with open("optiv2.save") as f:
+# with open("optiv2.save") as f:
+with open("optidynv2.save") as f:
     data_o = json.load(f)
 
 N = len(data_c["xs"][0])
@@ -145,6 +151,21 @@ print("pavgo\n", get_avg(data_o, "ps"))
 print("pmaxc\n", get_max(data_c, "ps"))
 print("pmaxo\n", get_max(data_o, "ps"))
 
+def print_csv(xss):
+    """Print multiple time series of values in CSV format for PGFPLOTS"""
+    N_lists = len(xss)
+    assert N_lists > 0
+
+    for i in range(len(xss[0])):
+        print(",".join([str(xss[j][i]) for j in range(N_lists)]))
+
+print()
+print()
+print_csv([
+    data_c["ts"], 
+    get_avg(data_c, "rhos"), get_avg(data_o, "rhos"),
+    get_max(data_c, "rhos"), get_max(data_o, "rhos"),
+    ])
 
 # xs = lambda i,data: [x[1] for x in data["xs"][i]]
 # ay = lambda i,data: data["ay"][i]

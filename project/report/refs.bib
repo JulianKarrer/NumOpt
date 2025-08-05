@@ -1,0 +1,503 @@
+
+@book{anderson,
+  author  = {Anderson, John David.},
+  title   = {{Computational Fluid Dynamics: The Basics with Applications.}},
+  year    = {1995},
+  isbn = {978-0071132107},
+  publisher = {McGraw-Hill, Inc.},
+}
+
+
+@inproceedings{tutorial2019,
+booktitle = {Eurographics 2019 - Tutorials},
+editor = {Jakob, Wenzel and Puppo, Enrico},
+title = {{Smoothed Particle Hydrodynamics Techniques for the Physics Based Simulation of Fluids and Solids}},
+author = {Koschier, Dan and Bender, Jan and Solenthaler, Barbara and Teschner, Matthias},
+year = {2019},
+publisher = {The Eurographics Association},
+ISSN = {1017-4656},
+ISBN = {},
+DOI = {10.2312/egt.20191035}
+}
+        
+@article{survey2022,
+author = {Koschier, Dan and Bender, Jan and Solenthaler, Barbara and Teschner, Matthias},
+title = {A Survey on SPH Methods in Computer Graphics},
+journal = {Computer Graphics Forum},
+volume = {41},
+number = {2},
+pages = {737-760},
+keywords = {CCS Concepts, • Computing methodologies → Physical simulation},
+doi = {https://doi.org/10.1111/cgf.14508},
+url = {https://onlinelibrary.wiley.com/doi/abs/10.1111/cgf.14508},
+eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1111/cgf.14508},
+year = {2022}
+}
+
+@article{pmpg,
+    author = {Alhussein, H. and Daqaq, M.},
+    title = {The principle of minimum pressure gradient: An alternative basis for physics-informed learning of incompressible fluid mechanics},
+    journal = {AIP Advances},
+    volume = {14},
+    number = {4},
+    pages = {045112},
+    year = {2024},
+    month = {04},
+    issn = {2158-3226},
+    doi = {10.1063/5.0197860},
+    url = {https://doi.org/10.1063/5.0197860},
+    eprint = {https://pubs.aip.org/aip/adv/article-pdf/doi/10.1063/5.0197860/19870776/045112\_1\_5.0197860.pdf},
+}
+
+@inproceedings{dfsph,
+author = {Bender, Jan and Koschier, Dan},
+title = {Divergence-free smoothed particle hydrodynamics},
+year = {2015},
+isbn = {9781450334969},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2786784.2786796},
+doi = {10.1145/2786784.2786796},
+abstract = {In this paper we introduce an efficient and stable implicit SPH method for the physically-based simulation of incompressible fluids. In the area of computer graphics the most efficient SPH approaches focus solely on the correction of the density error to prevent volume compression. However, the continuity equation for incompressible flow also demands a divergence-free velocity field which is neglected by most methods. Although a few methods consider velocity divergence, they are either slow or have a perceivable density fluctuation.Our novel method uses an efficient combination of two pressure solvers which enforce low volume compression (below 0.01\%) and a divergence-free velocity field. This can be seen as enforcing incompressibility both on position level and velocity level. The first part is essential for realistic physical behavior while the divergence-free state increases the stability significantly and reduces the number of solver iterations. Moreover, it allows larger time steps which yields a considerable performance gain since particle neighborhoods have to be updated less frequently. Therefore, our divergence-free SPH (DFSPH) approach is significantly faster and more stable than current state-of-the-art SPH methods for incompressible fluids. We demonstrate this in simulations with millions of fast moving particles.},
+booktitle = {Proceedings of the 14th ACM SIGGRAPH / Eurographics Symposium on Computer Animation},
+pages = {147–155},
+numpages = {9},
+keywords = {divergence-free fluids, fluid simulation, implicit integration, incompressibility, smoothed particle hydrodynamics},
+location = {Los Angeles, California},
+series = {SCA '15}
+}
+
+ @Article{optimized-source-term,
+author={Cornelis, Jens
+and Bender, Jan
+and Gissler, Christoph
+and Ihmsen, Markus
+and Teschner, Matthias},
+title={An optimized source term formulation for incompressible SPH},
+journal={The Visual Computer},
+year={2019},
+month={Apr},
+day={01},
+volume={35},
+number={4},
+pages={579-590},
+abstract={Incompressible SPH (ISPH) is a promising concept for the pressure computation in SPH. It works with large timesteps and the underlying pressure Poisson equation (PPE) can be solved very efficiently. Still, various aspects of current ISPH formulations can be optimized. This paper discusses issues of the two standard source terms that are typically employed in PPEs, i.e., density invariance (DI) and velocity divergence (VD). We show that the DI source term suffers from significant artificial viscosity, while the VD source term suffers from particle disorder and volume loss. As a conclusion of these findings, we propose a novel source term handling. A first PPE is solved with the VD source term to compute a divergence-free velocity field with minimized artificial viscosity. To address the resulting volume error and particle disorder, a second PPE is solved to improve the sampling quality. The result of the second PPE is used for a particle shift (PS) only. The divergence-free velocity field---computed from the first PPE---is not changed, but only resampled at the updated particle positions. Thus, the proposed source term handling incorporates velocity divergence and particle shift (VD + PS). The proposed VD + PS variant does not only improve the quality of the computed velocity field, but also accelerates the performance of the ISPH pressure computation. This is illustrated for IISPH---a recent ISPH implementation---where a performance gain factor of 1.6 could be achieved.},
+issn={1432-2315},
+doi={10.1007/s00371-018-1488-8},
+url={https://doi.org/10.1007/s00371-018-1488-8}
+}
+
+@ARTICLE{iisph,
+       author = {{Ihmsen}, Markus and {Cornelis}, Jens and {Solenthaler}, Barbara and {Horvath}, Christopher and {Teschner}, Matthias},
+        title = "{Implicit Incompressible SPH}",
+      journal = {IEEE Transactions on Visualization and Computer Graphics},
+     keywords = {Physically based simulation, fluid dynamics, smoothed particle hydrodynamics, incompressibility, implicit integration},
+         year = 2014,
+        month = jan,
+       volume = {20},
+       number = {3},
+        pages = {426-435},
+          doi = {10.1109/TVCG.2013.105},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2014ITVCG..20..426I},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+@inproceedings{pcisph,
+author = {Solenthaler, B. and Pajarola, R.},
+title = {Predictive-corrective incompressible SPH},
+year = {2009},
+isbn = {9781605587264},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1576246.1531346},
+doi = {10.1145/1576246.1531346},
+abstract = {We present a novel, incompressible fluid simulation method based on the Lagrangian Smoothed Particle Hydrodynamics (SPH) model. In our method, incompressibility is enforced by using a prediction-correction scheme to determine the particle pressures. For this, the information about density fluctuations is actively propagated through the fluid and pressure values are updated until the targeted density is satisfied. With this approach, we avoid the computational expenses of solving a pressure Poisson equation, while still being able to use large time steps in the simulation. The achieved results show that our predictive-corrective incompressible SPH (PCISPH) method clearly outperforms the commonly used weakly compressible SPH (WCSPH) model by more than an order of magnitude while the computations are in good agreement with the WCSPH results.},
+booktitle = {ACM SIGGRAPH 2009 Papers},
+articleno = {40},
+numpages = {6},
+keywords = {SPH, fluid simulation, incompressibility},
+location = {New Orleans, Louisiana},
+series = {SIGGRAPH '09}
+}
+
+@article{pbf,
+author = {Macklin, Miles and M\"{u}ller, Matthias},
+title = {Position based fluids},
+year = {2013},
+issue_date = {July 2013},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {32},
+number = {4},
+issn = {0730-0301},
+url = {https://doi.org/10.1145/2461912.2461984},
+doi = {10.1145/2461912.2461984},
+abstract = {In fluid simulation, enforcing incompressibility is crucial for realism; it is also computationally expensive. Recent work has improved efficiency, but still requires time-steps that are impractical for real-time applications. In this work we present an iterative density solver integrated into the Position Based Dynamics framework (PBD). By formulating and solving a set of positional constraints that enforce constant density, our method allows similar incompressibility and convergence to modern smoothed particle hydro-dynamic (SPH) solvers, but inherits the stability of the geometric, position based dynamics method, allowing large time steps suitable for real-time applications. We incorporate an artificial pressure term that improves particle distribution, creates surface tension, and lowers the neighborhood requirements of traditional SPH. Finally, we address the issue of energy loss by applying vorticity confinement as a velocity post process.},
+journal = {ACM Trans. Graph.},
+month = jul,
+articleno = {104},
+numpages = {12},
+keywords = {PCISPH, SPH, constraint fluids, fluid simulation, position based dynamics}
+}
+
+
+
+@article{sph-monaghan-92,
+   author = "Monaghan, J. J.",
+   title = "Smoothed Particle Hydrodynamics", 
+   journal= "Annual Review of Astronomy and Astrophysics",
+   year = "1992",
+   volume = "30",
+   number = "Volume 30, 1992",
+   pages = "543-574",
+   doi = "https://doi.org/10.1146/annurev.aa.30.090192.002551",
+   url = "https://www.annualreviews.org/content/journals/10.1146/annurev.aa.30.090192.002551",
+   publisher = "Annual Reviews",
+   issn = "1545-4282",
+   type = "Journal Article",
+   keywords = "numerical analysis",
+   keywords = "computational-fluid dynamics",
+  }
+
+@ARTICLE{sph-orig-77-monaghan-gingold,
+       author = {{Gingold}, R.~A. and {Monaghan}, J.~J.},
+        title = "{Smoothed particle hydrodynamics: theory and application to non-spherical stars.}",
+      journal = {\mnras},
+     keywords = {Hydrodynamics, Particle Theory, Stellar Models, Astrophysics, Stellar Rotation, Stellar Structure, Astrophysics},
+         year = 1977,
+        month = nov,
+       volume = {181},
+        pages = {375-389},
+          doi = {10.1093/mnras/181.3.375},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/1977MNRAS.181..375G},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+@ARTICLE{sph-orig-77,
+       author = {{Lucy}, L.~B.},
+        title = "{A numerical approach to the testing of the fission hypothesis.}",
+      journal = {\aj},
+     keywords = {Binary Stars, Hypotheses, Nuclear Fission, Numerical Analysis, Protostars, Stellar Evolution, Astronomical Models, Difference Equations, Gas Dynamics, Monte Carlo Method, Numerical Stability, Particle Motion, Stellar Rotation, Astrophysics},
+         year = 1977,
+        month = dec,
+       volume = {82},
+        pages = {1013-1024},
+          doi = {10.1086/112164},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/1977AJ.....82.1013L},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+@unknown{duarte-meshless,
+author = {Duarte, Carlos Armando},
+year = {1995},
+month = {05},
+pages = {},
+title = {A review of some meshless methods to solve partial differential equations},
+doi = {10.13140/RG.2.2.21361.48489}
+}
+
+@article{teschner-surf-tens-neg-kernel,
+author = {Akinci, Nadir and Akinci, Gizem and Teschner, Matthias},
+title = {Versatile surface tension and adhesion for SPH fluids},
+year = {2013},
+issue_date = {November 2013},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {32},
+number = {6},
+issn = {0730-0301},
+url = {https://doi.org/10.1145/2508363.2508395},
+doi = {10.1145/2508363.2508395},
+abstract = {Realistic handling of fluid-air and fluid-solid interfaces in SPH is a challenging problem. The main reason is that some important physical phenomena such as surface tension and adhesion emerge as a result of inter-molecular forces in a microscopic scale. This is different from scalar fields such as fluid pressure, which can be plausibly evaluated on a macroscopic scale using particles. Although there exist techniques to address this problem for some specific simulation scenarios, there does not yet exist a general approach to reproduce the variety of effects that emerge in reality from fluid-air and fluid-solid interactions. In order to address this problem, we present a new surface tension force and a new adhesion force. Different from the existing work, our surface tension force can handle large surface tensions in a realistic way. This property lets our approach handle challenging real scenarios, such as water crown formation, various types of fluid-solid interactions, and even droplet simulations. Furthermore, it prevents particle clustering at the free surface where inter-particle pressure forces are incorrect. Our adhesion force allows plausible two-way attraction of fluids and solids and can be used to model different wetting conditions. By using our forces, modeling surface tension and adhesion effects do not require involved techniques such as generating a ghost air phase or surface tracking. The forces are applied to the neighboring fluid-fluid and fluid-boundary particle pairs in a symmetric way, which satisfies momentum conservation. We demonstrate that combining both forces allows simulating a variety of interesting effects in a plausible way.},
+journal = {ACM Trans. Graph.},
+month = nov,
+articleno = {182},
+numpages = {8},
+keywords = {adhesion, fluid simulation, physically-based animation, smoothed particle hydrodynamics, surface tension}
+}
+
+@inproceedings{mueller-sph,
+author = {M\"{u}ller, Matthias and Charypar, David and Gross, Markus},
+title = {Particle-based fluid simulation for interactive applications},
+year = {2003},
+isbn = {1581136595},
+publisher = {Eurographics Association},
+address = {Goslar, DEU},
+abstract = {Realistically animated fluids can add substantial realism to interactive applications such as virtual surgery simulators or computer games. In this paper we propose an interactive method based on Smoothed Particle Hydrodynamics (SPH) to simulate fluids with free surfaces. The method is an extension of the SPH-based technique by Desbrun to animate highly deformable bodies. We gear the method towards fluid simulation by deriving the force density fields directly from the Navier-Stokes equation and by adding a term to model surface tension effects. In contrast to Eulerian grid-based approaches, the particle-based approach makes mass conservation equations and convection terms dispensable which reduces the complexity of the simulation. In addition, the particles can directly be used to render the surface of the fluid. We propose methods to track and visualize the free surface using point splatting and marching cubes-based surface reconstruction. Our animation method is fast enough to be used in interactive systems and to allow for user interaction with models consisting of up to 5000 particles.},
+booktitle = {Proceedings of the 2003 ACM SIGGRAPH/Eurographics Symposium on Computer Animation},
+pages = {154–159},
+numpages = {6},
+location = {San Diego, California},
+series = {SCA '03}
+}
+
+@article{price2012,
+title = {Smoothed particle hydrodynamics and magnetohydrodynamics},
+journal = {Journal of Computational Physics},
+volume = {231},
+number = {3},
+pages = {759-794},
+year = {2012},
+note = {Special Issue: Computational Plasma Physics},
+issn = {0021-9991},
+doi = {https://doi.org/10.1016/j.jcp.2010.12.011},
+url = {https://www.sciencedirect.com/science/article/pii/S0021999110006753},
+author = {Daniel J. Price},
+keywords = {Particle methods, Hydrodynamics, Smoothed particle hydrodynamics, Magnetohydrodynamics (MHD), Astrophysics},
+abstract = {This paper presents an overview and introduction to smoothed particle hydrodynamics and magnetohydrodynamics in theory and in practice. Firstly, we give a basic grounding in the fundamentals of SPH, showing how the equations of motion and energy can be self-consistently derived from the density estimate. We then show how to interpret these equations using the basic SPH interpolation formulae and highlight the subtle difference in approach between SPH and other particle methods. In doing so, we also critique several ‘urban myths’ regarding SPH, in particular the idea that one can simply increase the ‘neighbour number’ more slowly than the total number of particles in order to obtain convergence. We also discuss the origin of numerical instabilities such as the pairing and tensile instabilities. Finally, we give practical advice on how to resolve three of the main issues with SPMHD: removing the tensile instability, formulating dissipative terms for MHD shocks and enforcing the divergence constraint on the particles, and we give the current status of developments in this area. Accompanying the paper is the first public release of the ndspmhd SPH code, a 1, 2 and 3 dimensional code designed as a testbed for SPH/SPMHD algorithms that can be used to test many of the ideas and used to run all of the numerical examples contained in the paper.}
+}
+
+
+@Article{liu2010,
+author={Liu, M. B.
+and Liu, G. R.},
+title={Smoothed Particle Hydrodynamics (SPH): an Overview and Recent Developments},
+journal={Archives of Computational Methods in Engineering},
+year={2010},
+month={Mar},
+day={01},
+volume={17},
+number={1},
+pages={25-76},
+abstract={Smoothed particle hydrodynamics (SPH) is a meshfree particle method based on Lagrangian formulation, and has been widely applied to different areas in engineering and science. This paper presents an overview on the SPH method and its recent developments, including (1) the need for meshfree particle methods, and advantages of SPH, (2) approximation schemes of the conventional SPH method and numerical techniques for deriving SPH formulations for partial differential equations such as the Navier-Stokes (N-S) equations, (3) the role of the smoothing kernel functions and a general approach to construct smoothing kernel functions, (4) kernel and particle consistency for the SPH method, and approaches for restoring particle consistency, (5) several important numerical aspects, and (6) some recent applications of SPH. The paper ends with some concluding remarks.},
+issn={1886-1784},
+doi={10.1007/s11831-010-9040-7},
+url={https://doi.org/10.1007/s11831-010-9040-7}
+}
+
+@article{kernel-comparison-improv-convergence,
+    author = {Dehnen, Walter and Aly, Hossam},
+    title = {Improving convergence in smoothed particle hydrodynamics simulations without pairing instability},
+    journal = {Monthly Notices of the Royal Astronomical Society},
+    volume = {425},
+    number = {2},
+    pages = {1068-1082},
+    year = {2012},
+    month = {09},
+    abstract = {The numerical convergence of smoothed particle hydrodynamics (SPH) can be severely restricted by random force errors induced by particle disorder, especially in shear flows, which are ubiquitous in astrophysics. The increase in the number NH of neighbours when switching to more extended smoothing kernels at fixed resolution (using an appropriate definition for the SPH resolution scale) is insufficient to combat these errors. Consequently, trading resolution for better convergence is necessary, but for traditional smoothing kernels this option is limited by the pairing (or clumping) instability. Therefore, we investigate the suitability of the Wendland functions as smoothing kernels and compare them with the traditional B-splines. Linear stability analysis in three dimensions and test simulations demonstrate that the Wendland kernels avoid the pairing instability for allNH, despite having vanishing derivative at the origin (disproving traditional ideas about the origin of this instability; instead, we uncover a relation with the kernel Fourier transform and give an explanation in terms of the SPH density estimator). The Wendland kernels are computationally more convenient than the higher order B-splines, allowing large NH and hence better numerical convergence (note that computational costs rise sublinear with NH). Our analysis also shows that at low NH the quartic spline kernel with NH ≈ 60 obtains much better convergence than the standard cubic spline.},
+    issn = {0035-8711},
+    doi = {10.1111/j.1365-2966.2012.21439.x},
+    url = {https://doi.org/10.1111/j.1365-2966.2012.21439.x},
+    eprint = {https://academic.oup.com/mnras/article-pdf/425/2/1068/4013442/425-2-1068.pdf},
+}
+
+
+
+@article{gaussian-optimal,
+author = {Getreuer, Pascal},
+year = {2013},
+month = {12},
+pages = {286-310},
+title = {A Survey of Gaussian Convolution Algorithms},
+volume = {3},
+journal = {Image Processing On Line},
+doi = {10.5201/ipol.2013.87}
+}
+
+@article{band-phd,
+  author = {Band, Stefan},
+  year = {2020},
+  month = {01},
+  pages = {},
+  note = {PhD Thesis},
+  title = {Boundary handling and neighbor search in iterative incompressible SPH}
+}
+
+
+@inproceedings{2014-survey,
+booktitle = {Eurographics 2014 - State of the Art Reports},
+editor = {Sylvain Lefebvre and Michela Spagnuolo},
+title = {{SPH Fluids in Computer Graphics}},
+author = {Ihmsen, Markus and Orthmann, Jens and Solenthaler, Barbara and Kolb, Andreas and Teschner, Matthias},
+year = {2014},
+publisher = {The Eurographics Association},
+ISSN = {1017-4656},
+ISBN = {},
+DOI = {/10.2312/egst.20141034}
+}
+        
+@inproceedings{fuesrtenau-laplacian-comp,
+author = {Fürstenau, Jan-Philipp and Avci, Bircan and Wriggers, Peter},
+year = {2017},
+month = {06},
+pages = {},
+title = {A comparative numerical study of pressure-Poisson-equation discretization strategies for SPH}
+}
+
+@article{optimal-isph-timestep,
+title = {Optimal time step for incompressible SPH},
+journal = {Journal of Computational Physics},
+volume = {288},
+pages = {119-130},
+year = {2015},
+issn = {0021-9991},
+doi = {https://doi.org/10.1016/j.jcp.2015.02.015},
+url = {https://www.sciencedirect.com/science/article/pii/S0021999115000856},
+author = {Damien Violeau and Agnès Leroy},
+keywords = {SPH, Numerical stability, Incompressible, Viscous flow, Kernel Fourier transform},
+}
+
+@article{boundary2012akinci,
+author = {Akinci, Nadir and Ihmsen, Markus and Akinci, Gizem and Solenthaler, Barbara and Teschner, Matthias},
+title = {Versatile rigid-fluid coupling for incompressible SPH},
+year = {2012},
+issue_date = {July 2012},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {31},
+number = {4},
+issn = {0730-0301},
+url = {https://doi.org/10.1145/2185520.2185558},
+doi = {10.1145/2185520.2185558},
+month = jul,
+articleno = {62},
+numpages = {8},
+keywords = {fluid simulation, fluid-solid coupling, physically-based animation, smoothed particle hydrodynamics}
+}
+
+@inproceedings {consistent-boundaries,
+booktitle = {Vision, Modeling, and Visualization},
+title = {{Consistent SPH Rigid-Fluid Coupling}},
+author = {Jan Bender and Lukas Westhofen and Stefan Rhys Jeske},
+year = {2023},
+publisher = {The Eurographics Association},
+ISBN = {978-3-03868-232-5},
+DOI = {10.2312/vmv.20231244}
+}
+
+@article{unified-pressure-probst,
+author = {Probst, Timo and Teschner, Matthias},
+title = {Unified Pressure, Surface Tension and Friction for SPH Fluids},
+year = {2024},
+issue_date = {February 2025},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {44},
+number = {1},
+issn = {0730-0301},
+url = {https://doi.org/10.1145/3708034},
+doi = {10.1145/3708034},
+journal = {ACM Trans. Graph.},
+month = dec,
+articleno = {7},
+numpages = {28},
+keywords = {Physically-based animation, smoothed particle hydrodynamics, droplets, surface tension, friction, pressure, implicit solver, strong coupling}
+}
+
+@article{pressure-boundaries,
+author = {Band, Stefan and Gissler, Christoph and Ihmsen, Markus and Cornelis, Jens and Peer, Andreas and Teschner, Matthias},
+title = {Pressure Boundaries for Implicit Incompressible SPH},
+year = {2018},
+issue_date = {April 2018},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {37},
+number = {2},
+issn = {0730-0301},
+url = {https://doi.org/10.1145/3180486},
+doi = {10.1145/3180486},
+journal = {ACM Trans. Graph.},
+month = feb,
+articleno = {14},
+numpages = {11},
+keywords = {smoothed particle hydrodynamics, fluid animation, boundary handling, Physically based animation}
+}
+
+
+@software{SPlisHSPlasH_Library,
+  author = {Bender, Jan and others},
+  license = {MIT},
+  title = {{SPlisHSPlasH Library}},
+  note = {(software, \url{https://github.com/InteractiveComputerGraphics/SPlisHSPlasH})},
+}
+
+@techreport{painless-cg,
+author = {Shewchuk, Jonathan R},
+title = {An Introduction to the Conjugate Gradient Method Without the Agonizing Pain},
+year = {1994},
+publisher = {Carnegie Mellon University},
+address = {USA},
+abstract = {The Conjugate Gradient Method is the most prominent iterative method for solving sparse systems of linear equations. Unfortunately, many textbook treatments of the topic are written so that even their own authors would be mystified, if they bothered to read their own writing. For this reason, an understanding of the method has been reserved for the elite brilliant few who have painstakingly decoded the mumblings of their forebears. Nevertheless, the Conjugate Gradient Method is a composite of simple, elegant ideas that almost anyone can understand. Of course, a reader as intelligent as yourself will learn them almost effortlessly. The idea of quadratic forms is introduced and used to derive the methods of Steepest Descent, Conjugate Directions, and Conjugate Gradients. Eigenvectors are explained and used to examine the convergence of the Jacobi Method, Steepest Descent, and Conjugate Gradients. Other topics include preconditioning and the nonlinear Conjugate Gradient Method. I have taken pains to make this article easy to read. Sixty-two illustrations are provided. Dense prose is avoided. Concepts are explained in several different ways. Most equations are coupled with an intuitive interpretation.}
+}
+
+@Article{fisher-burmeister,
+author={Chen, Bintong
+and Chen, Xiaojun
+and Kanzow, Christian},
+title={A penalized Fischer-Burmeister NCP-function},
+journal={Mathematical Programming},
+year={2000},
+month={Jun},
+day={01},
+volume={88},
+number={1},
+pages={211-216},
+abstract={We introduce a new NCP-function in order to reformulate the nonlinear complementarity problem as a nonsmooth system of equations. This new NCP-function turns out to have stronger theoretical properties than the widely used Fischer-Burmeister function and other NCP-functions suggested previously. Moreover, numerical experience indicates that a semismooth Newton method based on this new NCP-function performs considerably better than the corresponding method based on the Fischer-Burmeister function.},
+issn={1436-4646},
+doi={10.1007/PL00011375},
+url={https://doi.org/10.1007/PL00011375}
+}
+
+@inproceedings{mls-extrapolated-pressure-boundaries,
+author = {Band, Stefan and Gissler, Christoph and Peer, Andreas and Teschner, Matthias},
+title = {MLS pressure extrapolation for the boundary handling in divergence-free SPH},
+year = {2018},
+publisher = {Eurographics Association},
+address = {Goslar, DEU},
+abstract = {We propose a novel method to predict pressure values at boundary particles in incompressible divergence-free SPH simulations (DFSPH). Our approach employs Moving Least Squares (MLS) to predict the pressure at boundary particles. Therefore, MLS computes hyperplanes that approximate the pressure field at the interface between fluid and boundary particles. We compare this approach with two previous techniques. One previous technique mirrors the pressure from fluid to boundary particles. The other one extrapolates the pressure from fluid to boundary particles, but uses a gradient that is computed with Smoothed Particle Hydrodynamics (SPH). We motivate that gradient-based extrapolation is more accurate than mirroring. We further motivate that our proposed MLS gradient is less error prone than the SPH gradient at the boundary. In our experiments, we indicate artifacts in previous approaches. We show that these artifacts are significantly reduced with our approach resulting in simulation steps that can be twice as large compared to previous methods. We further present challenging and complex scenarios to illustrate the capabilities of the proposed boundary handling.},
+booktitle = {Proceedings of the 14th Workshop on Virtual Reality Interactions and Physical Simulations},
+pages = {55–63},
+numpages = {9},
+location = {Delft, The Netherlands},
+series = {VRIPHYS '18}
+}
+@misc{burmeister-idee,
+    author = "{Timo Probst}",
+    title = {{Idea: Using Fischer-Burmeister to Regularize SPH Pressures}},
+    howpublished = {personal conversation},
+    note = {} ,
+    year=2025,
+}
+
+@Inbook{Gauss-least-action,
+author="Gau\ss, Carl Friedrich",
+title="{\"U}ber Ein Neues Allgemeines Grundgesetz der Mechanik",
+bookTitle="Werke: F{\"u}nfter Band",
+year="1877",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="23--28",
+abstract="Bekanntlich verwandelt.das Princip der virtuellen Geschwindigkeiten die ganze Statik in eine mathematische Aufgabe, und durch Dalembert's Princip f{\"u}r die Dynamik ist diese wiederum auf die Statik zur{\"u}ckgef{\"u}hrt. Es liegt daher in der Natur der Sache, dass es kein neues Grundprincip f{\"u}r die Bewegungs- und Gleichgewichts-Lehre geben kann, welches der Materie nach nicht in jenen beiden schon enthalten und aus ihnen abzuleiten w{\"a}re. Inzwischen scheint doch wegen dieses Umstandes noch nicht jedes neue Princip werthlos zu werden. Es wird allezeit interessant und lehrreich bleiben, den Naturgesetzen einen neuen vortheilhaften Gesichtspunkt abzugewinnen, sei es, dass man aus demselben diese oder jene einzelne Aufgabe leichter aufl{\"o}sen k{\"o}nne, oder dass sich aus ihm eine besondere Angemessenheit offenbare. Der grosse Geometer, der das Geb{\"a}ude der Mechanik auf dem Grunde des Princips der virtuellen Geschwindigkeiten auf eine so gl{\"a}nzende Art aufgef{\"u}hrt hat, hat es nicht verschm{\"a}ht, Maupertuis Princip der kleinsten Wirkung zu gr{\"o}sserer Bestimmtheit und Allgemeinheit zu erheben, ein Princip, dessen man sich zuweilen mit vielem Vortheil bedienen kann*).",
+isbn="978-3-642-49319-5",
+doi="10.1007/978-3-642-49319-5_2",
+url="https://doi.org/10.1007/978-3-642-49319-5_2"
+}
+
+@article{casadi,
+author = {Andersson, Joel and Gillis, Joris and Horn, Greg and Rawlings, James and Diehl, Moritz},
+year = {2018},
+month = {07},
+pages = {},
+title = {CasADi: a software framework for nonlinear optimization and optimal control},
+volume = {11},
+journal = {Mathematical Programming Computation},
+doi = {10.1007/s12532-018-0139-4}
+}
+
+@Article{ipopt,
+author={W{\"a}chter, Andreas
+and Biegler, Lorenz T.},
+title={On the implementation of an interior-point filter line-search algorithm for large-scale nonlinear programming},
+journal={Mathematical Programming},
+year={2006},
+month={Mar},
+day={01},
+volume={106},
+number={1},
+pages={25-57},
+abstract={We present a primal-dual interior-point algorithm with a filter line-search method for nonlinear programming. Local and global convergence properties of this method were analyzed in previous work. Here we provide a comprehensive description of the algorithm, including the feasibility restoration phase for the filter method, second-order corrections, and inertia correction of the KKT matrix. Heuristics are also considered that allow faster performance. This method has been implemented in the IPOPT code, which we demonstrate in a detailed numerical study based on 954 problems from the CUTEr test set. An evaluation is made of several line-search options, and a comparison is provided with two state-of-the-art interior-point codes for nonlinear programming.},
+issn={1436-4646},
+doi={10.1007/s10107-004-0559-y},
+url={https://doi.org/10.1007/s10107-004-0559-y}
+}
+
